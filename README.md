@@ -61,7 +61,7 @@ With [Homebrew](https://brew.sh) (macOS or Linux):
 
 ```bash
 brew install brendan-appstart/tap/bead-me-up-scotty
-scotty
+scotty start      # runs in the background; `scotty stop` stops it
 ```
 
 Update with `brew upgrade bead-me-up-scotty`. Other options (from source, global
@@ -214,7 +214,7 @@ DNS rebinding. If you reach Scotty through a LAN name (`mybox.local`) or a
 reverse proxy domain, allow it explicitly:
 
 ```bash
-SCOTTY_ALLOWED_HOSTS=mybox.local,tracker.example.com scotty
+SCOTTY_ALLOWED_HOSTS=mybox.local,tracker.example.com scotty start
 ```
 
 `SCOTTY_ALLOWED_HOSTS=*` accepts any hostname. That turns off the DNS-rebinding
@@ -279,12 +279,32 @@ Container limitations:
 
 ## Install globally
 
-Install once from a clone, then run `scotty` (or `bead-me-up-scotty`) from **any**
-directory. It starts the production server on a free port (default 3000) and opens
-your browser. Run it from a folder that has a `.beads` repo to jump straight to
-that project; otherwise you get the project picker. Requires Node 20+.
+Install once from a clone, then run `scotty start` (or `bead-me-up-scotty start`)
+from **any** directory. It starts the production server in the background on a free
+port (default 3000) and opens your browser. Run it from a folder that has a `.beads`
+repo to jump straight to that project; otherwise you get the project picker.
+Requires Node 20+.
 
-Flags: `-p, --port <n>` · `--no-open` · `--help`.
+| Command | What it does |
+| --- | --- |
+| `scotty start` | Start the server in the background and open the browser. If it is already running, just opens the browser again. |
+| `scotty stop` | Stop the background server, from any terminal. |
+| `scotty status` | Show the URL and PID; exits 1 if it is not running. |
+| `scotty logs [-f] [-n N]` | Show the server log (`-f` to follow). |
+| `scotty run` | Run in the foreground instead; Ctrl+C stops it. |
+
+Flags for `start` and `run`: `-p, --port <n>` · `--host <h>` · `--no-open`. Run
+`scotty` with no command (or `--help`) for usage.
+
+The background server's PID and log are kept in
+`${XDG_CONFIG_HOME:-~/.config}/bead-me-up-scotty/` (`server.json`, `server.log`).
+The log is reset on every `start`.
+
+> **Upgrading from an earlier version?** A bare `scotty` used to start the server in
+> the foreground (and `scotty &` to background it). It now prints usage; use
+> `scotty start` (background) or `scotty run` (foreground). Environment variables
+> such as `SCOTTY_ALLOWED_HOSTS` are read when the server starts, so run
+> `scotty stop` then `scotty start` to apply a change.
 
 **Recommended — `npm link` (keep the clone):**
 
@@ -294,7 +314,7 @@ cd bead-me-up-scotty
 npm install
 npm run build
 npm link
-scotty                 # from anywhere
+scotty start           # from anywhere
 ```
 
 The global command is a symlink to the clone, so keep it on disk and re-run
@@ -309,7 +329,7 @@ npm install
 rm -rf .next           # ensure a clean build (only the prod build is shipped)
 npm run build
 npm install -g .
-scotty                 # from anywhere; the clone can now be deleted
+scotty start           # from anywhere; the clone can now be deleted
 ```
 
 To update, rebuild and re-run `npm install -g .`. If `npm install -g .` hits a
