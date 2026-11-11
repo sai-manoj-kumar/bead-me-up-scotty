@@ -2,10 +2,22 @@
 /**
  * Global launcher for Bead Me Up, Scotty.
  *
- * Installed as `scotty` / `bead-me-up-scotty`. Starts the Next.js production
- * server (from this package's own prebuilt .next) on a free port, waits until
- * it's ready, then opens the browser. If you run it from a directory that
+ * Installed as `scotty` / `bead-me-up-scotty`.
+ *
+ *   scotty start    start the Next.js production server in the background
+ *   scotty stop     stop it again, from any terminal
+ *   scotty status   show whether it is running, and where
+ *   scotty logs     show (or follow) the server output
+ *   scotty run      run the server in the foreground (Ctrl+C to stop)
+ *
+ * The server is this package's own prebuilt .next, on a free port. Once it is
+ * ready we open the browser; if the command was run from a directory that
  * contains a `.beads` repo, it opens straight to that project's board.
+ *
+ * A background server is tracked by a small state file (pid, port, host) in the
+ * per-user config dir, next to the usage-statistics settings, so `stop` and
+ * `status` can find it from any terminal. Its output goes to `server.log`
+ * beside it.
  *
  * Zero dependencies — Node stdlib only. Works regardless of the directory it's
  * launched from (resolves the package root from this file's location, not cwd).
@@ -13,6 +25,7 @@
 import net from "node:net";
 import http from "node:http";
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
@@ -27,34 +40,57 @@ const ROOT = path.resolve(here, "..");
 
 const require = createRequire(import.meta.url);
 
-function printHelp() {
-  console.log(`
+/** How long `stop` waits after SIGTERM before it escalates to SIGKILL. */
+const STOP_GRACE_MS = 4000;
+/** A server started this recently is trusted on its PID alone (still booting). */
+const STARTUP_GRACE_MS = 60000;
+
+const COMMANDS = ["start", "stop", "status", "logs", "run"];
+
+function printHelp(stream = process.stdout) {
+  stream.write(`
 Bead Me Up, Scotty — local web UI for the beads (bd) tracker.
 
 Usage:
-  scotty [options]
-  bead-me-up-scotty [options]
+  scotty <command> [options]
+  bead-me-up-scotty <command> [options]
 
-Starts the server and opens your browser. Run it from a folder that has a
-.beads repo to jump straight to that project; otherwise you get the picker.
+Commands:
+  start     Start the server in the background and open your browser.
+            Run it from a folder that has a .beads repo to jump straight to
+            that project; otherwise you get the picker. If Scotty is already
+            running it just opens the browser again.
+  stop      Stop the background server (works from any terminal).
+  status    Show whether the server is running, with its URL and PID.
+            Exits 1 when it is not running.
+  logs      Print the end of the server log.
+              -f, --follow    Keep printing new output (Ctrl+C to quit).
+              -n, --lines <n> How many lines to show (default 50).
+  run       Run the server in the foreground; Ctrl+C stops it.
 
-Options:
+Options (start, run):
   -p, --port <n>   Port to use (default 3000, or $PORT). Auto-picks a free
                    port if the default is busy; with an explicit --port it
                    fails instead of moving.
       --host <h>   Host to bind (default from Next; or $HOST).
       --no-open    Don't open a browser, just print the URL.
   -h, --help       Show this help.
+
+The background server's PID and log live in
+\${XDG_CONFIG_HOME:-~/.config}/bead-me-up-scotty/.
 `);
 }
 
 function parseArgs(argv) {
-  const opts = { open: true, help: false };
+  const opts = { open: true, help: false, follow: false, lines: 50 };
   let portExplicit = false;
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === "-h" || a === "--help") opts.help = true;
     else if (a === "--no-open") opts.open = false;
+    else if (a === "-f" || a === "--follow") opts.follow = true;
+    else if (a === "-n" || a === "--lines") opts.lines = Number(argv[++i]);
+    else if (a.startsWith("--lines=")) opts.lines = Number(a.slice("--lines=".length));
     else if (a === "-p" || a === "--port") {
       opts.port = Number(argv[++i]);
       portExplicit = true;
@@ -65,6 +101,8 @@ function parseArgs(argv) {
       opts.host = argv[++i];
     } else if (a.startsWith("--host=")) {
       opts.host = a.slice("--host=".length);
+    } else if (!a.startsWith("-") && opts.command === undefined) {
+      opts.command = a; // first bare word is the subcommand
     }
   }
   opts.portExplicit = portExplicit;
@@ -83,6 +121,10 @@ function parseArgs(argv) {
     console.error(`Invalid port: ${String(opts.port)} (expected 1-65535)`);
     process.exit(1);
   }
+  if (!Number.isInteger(opts.lines) || opts.lines < 1) {
+    console.error(`Invalid line count (expected a positive integer)`);
+    process.exit(1);
+  }
   return opts;
 }
 
@@ -93,6 +135,23 @@ function portFree(port) {
     srv.once("error", () => resolve(false));
     srv.once("listening", () => srv.close(() => resolve(true)));
     srv.listen({ port, host: "0.0.0.0" });
+  });
+}
+
+/** Resolve true if something accepts TCP connections at host:port. */
+function portInUse(host, port) {
+  return new Promise((resolve) => {
+    const sock = net.connect({ host, port });
+    sock.setTimeout(1000);
+    sock.once("connect", () => {
+      sock.destroy();
+      resolve(true);
+    });
+    sock.once("timeout", () => {
+      sock.destroy();
+      resolve(false);
+    });
+    sock.once("error", () => resolve(false));
   });
 }
 
@@ -123,8 +182,25 @@ function resolveNextBin() {
   }
 }
 
-/** Poll the server until it responds, then resolve. */
-function waitForReady(host, port, timeoutMs = 30000) {
+/** A production build must already exist — we never build at runtime (the
+ *  global install dir may not be writable, and a build needs devDependencies). */
+function ensureBuild() {
+  if (!fs.existsSync(path.join(ROOT, ".next", "BUILD_ID"))) {
+    console.error(
+      "No production build found.\n" +
+        "Run `npm run build` in the project directory, then reinstall " +
+        "(`npm link` or `npm install -g .`).",
+    );
+    process.exit(1);
+  }
+}
+
+/**
+ * Poll the server until it responds, then resolve. `failed()` lets the caller
+ * bail out early (e.g. the server process already exited) instead of waiting
+ * out the whole timeout.
+ */
+function waitForReady(host, port, timeoutMs = 30000, failed = () => false) {
   const deadline = Date.now() + timeoutMs;
   return new Promise((resolve, reject) => {
     const tick = () => {
@@ -139,7 +215,8 @@ function waitForReady(host, port, timeoutMs = 30000) {
       });
     };
     const retry = () => {
-      if (Date.now() > deadline) reject(new Error("Server did not become ready in time"));
+      if (failed()) reject(new Error("Server exited before it was ready"));
+      else if (Date.now() > deadline) reject(new Error("Server did not become ready in time"));
       else setTimeout(tick, 250);
     };
     tick();
@@ -210,23 +287,302 @@ async function targetPath(host, port) {
   }
 }
 
-async function main() {
-  const opts = parseArgs(process.argv.slice(2));
-  if (opts.help) {
-    printHelp();
-    process.exit(0);
+/** Canonical board URL, plus opening the browser if asked. */
+async function showAndOpen(host, port, open) {
+  const target = open ? await targetPath(host, port) : "/";
+  // Canonicalize through the URL parser — throws on anything that isn't a
+  // well-formed http origin, so no raw user input reaches openBrowser().
+  const fullUrl = new URL(target, `http://${host}:${port}`).href;
+  return { fullUrl, open: () => open && openBrowser(fullUrl) };
+}
+
+/* ------------------------------------------------------------------ */
+/* Background server bookkeeping                                      */
+/* ------------------------------------------------------------------ */
+
+/** Same per-user dir the usage-statistics settings use. */
+function stateDir() {
+  const base = process.env.XDG_CONFIG_HOME || path.join(os.homedir(), ".config");
+  return path.join(base, "bead-me-up-scotty");
+}
+const stateFile = () => path.join(stateDir(), "server.json");
+const logFile = () => path.join(stateDir(), "server.log");
+
+/** Read the state file; null when missing or malformed. */
+function readState() {
+  try {
+    const s = JSON.parse(fs.readFileSync(stateFile(), "utf8"));
+    if (
+      Number.isInteger(s.pid) && s.pid > 0 &&
+      Number.isInteger(s.port) && s.port > 0 &&
+      typeof s.host === "string" && Number.isFinite(s.startedAt)
+    ) {
+      return s;
+    }
+  } catch {
+    /* no state / unreadable */
+  }
+  return null;
+}
+
+/** Create the state file, failing (false) if one appeared in the meantime. */
+function writeStateExclusive(state) {
+  try {
+    fs.writeFileSync(stateFile(), JSON.stringify(state), { flag: "wx", mode: 0o600 });
+    return true;
+  } catch (e) {
+    if (e.code === "EEXIST") return false;
+    throw e;
+  }
+}
+
+function removeState() {
+  try {
+    fs.unlinkSync(stateFile());
+  } catch {
+    /* already gone */
+  }
+}
+
+function pidAlive(pid) {
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch (e) {
+    return e.code === "EPERM"; // exists, just not ours to signal
+  }
+}
+
+/**
+ * Send `sig` to the background server. It was started as the leader of its own
+ * process group, so on POSIX we signal the whole group in case Next forked
+ * workers. Returns false if the process is already gone.
+ */
+function signalServer(pid, sig) {
+  const attempts = process.platform === "win32" ? [pid] : [-pid, pid];
+  for (const target of attempts) {
+    try {
+      process.kill(target, sig);
+      return true;
+    } catch (e) {
+      if (e.code !== "ESRCH") throw e;
+    }
+  }
+  return false;
+}
+
+async function waitForExit(pid, timeoutMs) {
+  const deadline = Date.now() + timeoutMs;
+  while (pidAlive(pid)) {
+    if (Date.now() > deadline) return false;
+    await new Promise((r) => setTimeout(r, 100));
+  }
+  return true;
+}
+
+/**
+ * The state of the background server, or null if there isn't one. A state file
+ * whose process is gone — or whose PID has been recycled by something that
+ * isn't listening on the recorded port — is stale and is removed, so we never
+ * signal a stranger's process.
+ */
+async function getRunning() {
+  const state = readState();
+  if (!state) {
+    removeState(); // drop a corrupt file, if any
+    return null;
+  }
+  const booting = Date.now() - state.startedAt < STARTUP_GRACE_MS;
+  if (pidAlive(state.pid) && (booting || (await portInUse(state.host, state.port)))) {
+    return state;
+  }
+  removeState();
+  return null;
+}
+
+function formatUptime(ms) {
+  const s = Math.max(0, Math.floor(ms / 1000));
+  const d = Math.floor(s / 86400);
+  const h = Math.floor((s % 86400) / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  if (d) return `${d}d ${h}h`;
+  if (h) return `${h}h ${m}m`;
+  if (m) return `${m}m ${s % 60}s`;
+  return `${s}s`;
+}
+
+const serverUrl = (s) => `http://${s.host}:${s.port}/`;
+
+/* ------------------------------------------------------------------ */
+/* Commands                                                           */
+/* ------------------------------------------------------------------ */
+
+async function cmdStart(opts) {
+  const running = await getRunning();
+  if (running) {
+    console.log(`\n  Scotty is already running → ${serverUrl(running)}  (pid ${running.pid})`);
+    if (opts.portExplicit && opts.port !== running.port) {
+      console.log(`  (ignoring --port ${opts.port}; \`scotty stop\` first to move it)`);
+    }
+    const { fullUrl, open } = await showAndOpen(running.host, running.port, opts.open);
+    console.log(`  ${fullUrl}\n`);
+    open();
+    return;
   }
 
-  // A production build must already exist — we never build at runtime (the
-  // global install dir may not be writable, and a build needs devDependencies).
-  if (!fs.existsSync(path.join(ROOT, ".next", "BUILD_ID"))) {
-    console.error(
-      "No production build found.\n" +
-        "Run `npm run build` in the project directory, then reinstall " +
-        "(`npm link` or `npm install -g .`).",
-    );
+  ensureBuild();
+  const port = await pickPort(opts.port, opts.portExplicit);
+  const host = opts.host;
+  const nextBin = resolveNextBin();
+
+  fs.mkdirSync(stateDir(), { recursive: true, mode: 0o700 });
+  // The log is truncated on every start so it can't grow without bound across
+  // restarts; it holds the output of the current (or last) server only.
+  const logFd = fs.openSync(logFile(), "w", 0o600);
+  const child = spawn(process.execPath, [nextBin, "start", ROOT, "-p", String(port), "-H", host], {
+    cwd: ROOT,
+    detached: true, // own session/process group, so it outlives this terminal
+    stdio: ["ignore", logFd, logFd],
+    windowsHide: true,
+    env: { ...process.env, PORT: String(port), HOST: host },
+  });
+  fs.closeSync(logFd);
+
+  let exited = false;
+  child.on("error", () => (exited = true));
+  child.on("exit", () => (exited = true));
+
+  if (!child.pid) {
+    console.error("Could not start the server process.");
     process.exit(1);
   }
+
+  const state = { pid: child.pid, port, host, startedAt: Date.now() };
+  if (!writeStateExclusive(state)) {
+    // Another `scotty start` won the race between our check and now.
+    signalServer(child.pid, "SIGKILL");
+    const winner = await getRunning();
+    console.log(`\n  Scotty is already running${winner ? ` → ${serverUrl(winner)}` : ""}\n`);
+    return;
+  }
+  child.unref();
+
+  try {
+    await waitForReady(host, port, 30000, () => exited);
+  } catch (err) {
+    try {
+      signalServer(child.pid, "SIGKILL");
+    } catch {
+      /* already gone */
+    }
+    removeState();
+    console.error(`Server failed to start (${err.message}). Last of ${logFile()}:\n`);
+    console.error(tailFile(logFile(), 20) || "  (log is empty)");
+    process.exit(1);
+  }
+
+  const { fullUrl, open } = await showAndOpen(host, port, opts.open);
+  console.log(
+    `\n  Bead Me Up, Scotty → ${fullUrl}\n` +
+      `  Running in the background (pid ${child.pid}). Stop it with: scotty stop\n`,
+  );
+  open();
+}
+
+async function cmdStop() {
+  const state = await getRunning();
+  if (!state) {
+    console.log("Scotty is not running.");
+    return;
+  }
+  try {
+    signalServer(state.pid, "SIGTERM");
+    // `next start` drains in-flight requests on SIGTERM, and our SSE change
+    // stream never completes on its own — so give it a short deadline, then
+    // SIGKILL, exactly like Ctrl+C does for `scotty run`.
+    if (!(await waitForExit(state.pid, STOP_GRACE_MS))) {
+      signalServer(state.pid, "SIGKILL");
+      if (!(await waitForExit(state.pid, 2000))) {
+        console.error(`Could not stop Scotty (pid ${state.pid}).`);
+        process.exit(1);
+      }
+    }
+  } catch (e) {
+    console.error(`Could not stop Scotty (pid ${state.pid}): ${e.message}`);
+    process.exit(1);
+  }
+  removeState();
+  console.log(`Stopped Scotty (pid ${state.pid}).`);
+}
+
+async function cmdStatus() {
+  const state = await getRunning();
+  if (!state) {
+    console.log("Scotty is not running.");
+    process.exit(1);
+  }
+  console.log(
+    `Scotty is running\n` +
+      `  URL:  ${serverUrl(state)}\n` +
+      `  PID:  ${state.pid}\n` +
+      `  Up:   ${formatUptime(Date.now() - state.startedAt)}\n` +
+      `  Log:  ${logFile()}`,
+  );
+}
+
+/** Last `n` lines of a file (reads at most the final 1 MiB). "" if missing. */
+function tailFile(file, n) {
+  try {
+    const { size } = fs.statSync(file);
+    const len = Math.min(size, 1 << 20);
+    const buf = Buffer.alloc(len);
+    const fd = fs.openSync(file, "r");
+    try {
+      fs.readSync(fd, buf, 0, len, size - len);
+    } finally {
+      fs.closeSync(fd);
+    }
+    const lines = buf.toString("utf8").split("\n");
+    if (lines[lines.length - 1] === "") lines.pop();
+    return lines.slice(-n).join("\n");
+  } catch {
+    return "";
+  }
+}
+
+async function cmdLogs(opts) {
+  const file = logFile();
+  if (!fs.existsSync(file)) {
+    console.error("No server log yet. Start Scotty with: scotty start");
+    process.exit(1);
+  }
+  const text = tailFile(file, opts.lines);
+  if (text) console.log(text);
+  if (!opts.follow) return;
+
+  let offset = fs.statSync(file).size;
+  setInterval(() => {
+    try {
+      const { size } = fs.statSync(file);
+      if (size < offset) offset = 0; // truncated by a restart
+      if (size === offset) return;
+      const fd = fs.openSync(file, "r");
+      try {
+        const buf = Buffer.alloc(size - offset);
+        fs.readSync(fd, buf, 0, buf.length, offset);
+        process.stdout.write(buf);
+        offset = size;
+      } finally {
+        fs.closeSync(fd);
+      }
+    } catch {
+      /* log briefly missing; try again next tick */
+    }
+  }, 500);
+}
+
+async function cmdRun(opts) {
+  ensureBuild();
 
   const port = await pickPort(opts.port, opts.portExplicit);
   const host = opts.host;
@@ -246,7 +602,6 @@ async function main() {
   // never completes on its own, so with any browser tab open the server waits
   // forever and Ctrl+C looks like it did nothing. Give the graceful path a
   // short deadline, then escalate to SIGKILL so Ctrl+C always works.
-  const FORCE_KILL_AFTER_MS = 4000;
   let shuttingDown = false;
   let forceTimer = null;
 
@@ -268,7 +623,7 @@ async function main() {
     shuttingDown = true;
     child.kill(sig);
     console.log("\n  Stopping…  (Ctrl+C again to force)");
-    forceTimer = setTimeout(hardKill, FORCE_KILL_AFTER_MS);
+    forceTimer = setTimeout(hardKill, STOP_GRACE_MS);
   };
 
   process.on("SIGINT", () => forward("SIGINT"));
@@ -292,12 +647,39 @@ async function main() {
     return; // child's exit handler will set the exit code
   }
 
-  const target = opts.open ? await targetPath(host, port) : "/";
-  // Canonicalize through the URL parser — throws on anything that isn't a
-  // well-formed http origin, so no raw user input reaches openBrowser().
-  const fullUrl = new URL(target, `http://${host}:${port}`).href;
+  const { fullUrl, open } = await showAndOpen(host, port, opts.open);
   console.log(`\n  Bead Me Up, Scotty → ${fullUrl}\n  (Ctrl+C to stop)\n`);
-  if (opts.open) openBrowser(fullUrl);
+  open();
+}
+
+async function main() {
+  const opts = parseArgs(process.argv.slice(2));
+
+  // No subcommand (or --help): show usage. A bare `scotty` deliberately does
+  // not start a server any more — `scotty start` does.
+  if (opts.help || opts.command === undefined) {
+    printHelp();
+    process.exit(0);
+  }
+
+  switch (opts.command) {
+    case "start":
+      return cmdStart(opts);
+    case "stop":
+      return cmdStop(opts);
+    case "status":
+      return cmdStatus(opts);
+    case "logs":
+      return cmdLogs(opts);
+    case "run":
+      return cmdRun(opts);
+    default:
+      console.error(
+        `Unknown command: ${JSON.stringify(opts.command)} (expected one of: ${COMMANDS.join(", ")})`,
+      );
+      printHelp(process.stderr);
+      process.exit(1);
+  }
 }
 
 main().catch((err) => {
