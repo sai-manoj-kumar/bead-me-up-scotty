@@ -11,8 +11,8 @@ export function themeInitScript(): string {
   return `(function(){try{
 var P=${JSON.stringify(palettes)};
 var m=location.pathname.match(/^\\/p\\/([^/]+)/);
-var s=localStorage,k=m?"bmus.theme."+decodeURIComponent(m[1]):"bmus.theme";
-var c=s.getItem(k)||s.getItem("bmus-theme");
+var s=localStorage,k=m?"beadscope.theme."+decodeURIComponent(m[1]):"beadscope.theme";
+var c=s.getItem(k);
 if(c!=="${SYSTEM_CHOICE_ID}"&&!(c in P))c="${DEFAULT_CHOICE_ID}";
 var id=c;
 if(c==="${SYSTEM_CHOICE_ID}")id=matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";

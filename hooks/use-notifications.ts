@@ -13,8 +13,8 @@ import { needsHuman } from "@/lib/beads-view";
  * localStorage rather than the server-side app config.
  */
 
-const PREFS_KEY = "bmus.notifications";
-const OPEN_BEAD_EVENT = "bmus:open-bead";
+const PREFS_KEY = "beadscope.notifications";
+const OPEN_BEAD_EVENT = "beadscope:open-bead";
 
 export interface NotifPrefs {
   enabled: boolean;

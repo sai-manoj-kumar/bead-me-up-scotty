@@ -32,7 +32,7 @@ try {
   });
   await page.goto(`${base}/p/demo`);
   await page.locator('article').first().waitFor();
-  assert.equal(await page.evaluate(() => localStorage.getItem('bmus.view.demo')), null);
+  assert.equal(await page.evaluate(() => localStorage.getItem('beadscope.view.demo')), null);
   assert.equal(await page.getByRole('heading', { name: 'Focus', exact: true }).count(), 0, 'Board is first-visit default');
   await page.getByRole('button', { name: 'Focus', exact: true }).click();
   await page.getByRole('heading', { name: 'Focus', exact: true }).waitFor();
@@ -47,7 +47,7 @@ try {
   assert.match(await ids('Next up'), /ready/);
   assert.match(await ids('In flight'), /flight/);
   assert.doesNotMatch((await page.locator('section article').allTextContents()).join(' '), /archived|done/);
-  await page.screenshot({ path: '/tmp/scotty-focus-final.png' });
+  await page.screenshot({ path: '/tmp/beadscope-focus-final.png' });
   await page.getByRole('button', { name: 'alpha', exact: true }).click();
   assert.match(await ids('Blocked'), /waiting/);
   assert.doesNotMatch(await ids('Blocked'), /conditional|manual/);

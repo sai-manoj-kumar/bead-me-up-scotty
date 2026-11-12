@@ -12,7 +12,7 @@ try {
  page.on('pageerror',e=>errors.push(e.message));
  await page.addInitScript(()=>{
   if(!localStorage.getItem('theme-test-seeded')) {
-   localStorage.setItem('bmus.theme.demo','dark');
+   localStorage.setItem('beadscope.theme.demo','dark');
    localStorage.setItem('theme-test-seeded','true');
   }
  });
@@ -28,7 +28,7 @@ try {
  await page.reload();
  await themeToggle().waitFor();
  await page.waitForFunction(()=>document.documentElement.dataset.theme==='light');
- assert.equal(await page.evaluate(()=>localStorage.getItem('bmus.theme.demo')),'light');
+ assert.equal(await page.evaluate(()=>localStorage.getItem('beadscope.theme.demo')),'light');
  assert.deepEqual(errors,[]);
  console.log('PASS: saved dark theme hydration, reload, toggle, and persistence');
 } finally { await browser.close(); }

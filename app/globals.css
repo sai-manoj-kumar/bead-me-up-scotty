@@ -156,7 +156,7 @@
 }
 
 /* ------------------------------------------------------------------ */
-/* Named themes (bead-me-up-scotty-81k). Each overrides only the raw   */
+/* Named themes (bead 81k). Each overrides only the raw   */
 /* palette vars; shadcn semantic tokens derive from them via var().    */
 /* All are dark-mode, so the .dark class is also applied by the         */
 /* provider and supplies shadow + dark semantic literals; these blocks  */

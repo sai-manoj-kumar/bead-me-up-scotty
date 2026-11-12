@@ -96,8 +96,9 @@ below; see [Install globally](#install-globally).
   delete (`bd delete`, behind a confirm).
 - **Human-vs-agent attribution** — every bead and comment shows 👤 (human) or 🤖
   (agent), derived from a configurable human allowlist.
-- **Settings** — repo path, human actor + allowlist, poll interval, and light/dark
-  theme. Live polling keeps the board fresh when agents change data underneath you.
+- **Settings** — repo path, human actor + allowlist, poll interval, and
+  theme (System, which follows your OS and is the default, Light, Dark, or a named
+  palette). Live polling keeps the board fresh when agents change data underneath you.
 
 ### Focus: compare assignees and recent completions
 

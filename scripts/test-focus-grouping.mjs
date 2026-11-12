@@ -96,7 +96,7 @@ try {
   await page.setViewportSize({ width: 720, height: 900 });
   await group.selectOption('assignee');
   await row('Alice').waitFor();
-  await page.screenshot({ path: '/tmp/scotty-focus-grouped-narrow.png' });
+  await page.screenshot({ path: '/tmp/beadscope-focus-grouped-narrow.png' });
   assert.deepEqual(errors, []);
   console.log('PASS: Focus defaults, assignee grouping, hooked and uncapped blocked work, recent limit/show-all, lanes, keyboard links, read-only details, live updates and narrow layout');
 } finally { await browser.close(); }

@@ -20,7 +20,7 @@ try {
   await page.goto(`${base}/p/demo?view=epics`);
   await toggle().waitFor();
   await page.waitForFunction(() => document.documentElement.dataset.theme === 'dark');
-  assert.equal(await page.evaluate(() => localStorage.getItem('bmus.theme.demo')), null);
+  assert.equal(await page.evaluate(() => localStorage.getItem('beadscope.theme.demo')), null);
 
   // 2. The OS flips while the page is open => the page follows, no reload.
   await page.emulateMedia({ colorScheme: 'light' });
@@ -30,7 +30,7 @@ try {
   // 3. Toggle from System saves the opposite of what is showing (dark), explicitly.
   await toggle().click();
   await page.waitForFunction(() => document.documentElement.dataset.theme === 'dark');
-  assert.equal(await page.evaluate(() => localStorage.getItem('bmus.theme.demo')), 'dark');
+  assert.equal(await page.evaluate(() => localStorage.getItem('beadscope.theme.demo')), 'dark');
 
   // 4. An explicit choice no longer follows the OS.
   await page.emulateMedia({ colorScheme: 'light' });
@@ -39,18 +39,18 @@ try {
 
   // 5. Choosing System again in the store resumes following the OS, and the
   //    inline head script applies it before React hydrates (no flash).
-  await page.evaluate(() => localStorage.setItem('bmus.theme.demo', 'system'));
+  await page.evaluate(() => localStorage.setItem('beadscope.theme.demo', 'system'));
   await ctx.close();
   const ctx2 = await browser.newContext({ colorScheme: 'dark' });
   const p2 = await ctx2.newPage();
-  await p2.addInitScript(() => localStorage.setItem('bmus.theme.demo', 'system'));
+  await p2.addInitScript(() => localStorage.setItem('beadscope.theme.demo', 'system'));
   await p2.route('**/*.js', (r) => r.abort()); // no hydration: only the inline script runs
   await p2.goto(`${base}/p/demo?view=epics`, { waitUntil: 'domcontentloaded' });
   assert.equal(await theme(p2), 'dark', 'inline script must theme the page before hydration');
   assert.equal(await hasDark(p2), true);
 
   // 6. A stored named palette is untouched by the OS setting.
-  await p2.evaluate(() => localStorage.setItem('bmus.theme.other', 'nord'));
+  await p2.evaluate(() => localStorage.setItem('beadscope.theme.other', 'nord'));
   await p2.goto(`${base}/p/other`, { waitUntil: 'domcontentloaded' });
   assert.equal(await theme(p2), 'nord');
 

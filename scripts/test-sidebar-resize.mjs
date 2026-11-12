@@ -27,7 +27,7 @@ try {
   assert.equal(await width(), 228, 'default width');
   await drag(72);
   assert.equal(await width(), 300, 'drag right widens');
-  assert.equal(await page.evaluate(() => localStorage.getItem('bmus.width.sidebar')), '300');
+  assert.equal(await page.evaluate(() => localStorage.getItem('beadscope.width.sidebar')), '300');
   await drag(-1000);
   assert.equal(await width(), 180, 'clamped to minimum');
   await drag(1000);

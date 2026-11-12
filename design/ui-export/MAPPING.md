@@ -1,6 +1,6 @@
 # Design export → app mapping
 
-Source: `extracted/Bead Me Up Scotty.dc.html` (Claude Design `.dc` format — templated
+Source: `extracted/Beadscope.dc.html` (Claude Design `.dc` format — templated
 HTML + an embedded `Component` class that is a full working prototype). The export
 already implements the spec's behavior against a mock dataset; we port it to the
 real stack and swap the mock for live `bd` data.

@@ -28,7 +28,7 @@ try {
   page.on("pageerror", error => errors.push(error.message));
   await page.clock.install({ time: new Date("2026-09-06T12:00:00Z") });
   await page.addInitScript(() => {
-    localStorage.setItem("bmus.notifications", JSON.stringify({ enabled: true, finished: true, blocked: true, escalation: true }));
+    localStorage.setItem("beadscope.notifications", JSON.stringify({ enabled: true, finished: true, blocked: true, escalation: true }));
     const readEvents = () => JSON.parse(sessionStorage.getItem("notification-events") || "[]");
     const writeEvents = (events) => sessionStorage.setItem("notification-events", JSON.stringify(events));
     class MockNotification {

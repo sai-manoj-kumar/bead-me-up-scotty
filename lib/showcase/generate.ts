@@ -60,7 +60,7 @@ function outputBase(opts: ShowcaseOptions): string {
     const p = getProject(opts.projectId);
     if (p && p.path) return path.join(p.path, ".beads", "showcase");
   }
-  return path.join(os.tmpdir(), `bmus-showcase-${safeSlug(opts.projectId)}-${opts.scope}`);
+  return path.join(os.tmpdir(), `beadscope-showcase-${safeSlug(opts.projectId)}-${opts.scope}`);
 }
 
 async function gatherBeads(opts: ShowcaseOptions): Promise<Bead[]> {

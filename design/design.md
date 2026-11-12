@@ -1,7 +1,7 @@
 
 ==== specification starts here ====
 
-# Bead Me Up, Scotty — Specification
+# Beadscope — Specification
 
 A local, single-user web UI for **beads** (`bd`), Steve Yegge's distributed graph
 issue tracker (https://github.com/gastownhall/beads). beads ships a powerful CLI

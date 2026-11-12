@@ -30,7 +30,7 @@ const SHORTCUTS = {
 };
 
 const PRIORITIES = ["Critical", "High", "Medium", "Low", "Backlog"];
-const RECENTS_KEY = "bmus.palette.recentBeads";
+const RECENTS_KEY = "beadscope.palette.recentBeads";
 
 // Recents are ephemeral UI state, so they live in localStorage (client-side)
 // rather than the server-side app config.

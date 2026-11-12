@@ -2,8 +2,8 @@
 import * as React from "react";
 import type { BoardSortMode } from "@/lib/board-columns";
 import type { UpdateChannel } from "@/lib/update-types";
-const PREFS_KEY = "bmus.board";
-const EVENT = "bmus.board.changed";
+const PREFS_KEY = "beadscope.board";
+const EVENT = "beadscope.board.changed";
 export type BlockedColumnMode = "auto" | "always";
 export interface BoardPrefs {
   blockedColumn: BlockedColumnMode;
