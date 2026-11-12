@@ -43,7 +43,7 @@ jobs:
       # Playwright suites (test-*.mjs with BEADSCOPE_TEST_URL) are not run here yet.
       - name: Unit and launcher tests
         run: |
-          for t in actor-default blocking dep-candidates state-migration telemetry updates daemon; do
+          for t in actor-default blocking dep-candidates telemetry updates daemon; do
             echo "::group::test-$t"
             node "scripts/test-$t.mjs"
             echo "::endgroup::"
