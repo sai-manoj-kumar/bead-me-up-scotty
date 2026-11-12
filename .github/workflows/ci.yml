@@ -1,0 +1,53 @@
+name: CI
+
+# Runs on every pull request and on pushes to main. The single job is named
+# "check" so it can be a required status check on the protected main branch.
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NEXT_TELEMETRY_DISABLED: "1"
+
+jobs:
+  check:
+    name: check
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Type-check
+        run: npx tsc --noEmit
+
+      # Only the tests that need neither a browser nor a running server. The
+      # Playwright suites (test-*.mjs with BEADSCOPE_TEST_URL) are not run here yet.
+      - name: Unit and launcher tests
+        run: |
+          for t in actor-default blocking dep-candidates state-migration telemetry updates daemon; do
+            echo "::group::test-$t"
+            node "scripts/test-$t.mjs"
+            echo "::endgroup::"
+          done
+
+      - name: Build
+        run: npm run build
