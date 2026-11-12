@@ -412,6 +412,31 @@ function formatUptime(ms) {
 
 const serverUrl = (s) => `http://${s.host}:${s.port}/`;
 
+/**
+ * Hostnames BEADSCOPE_ALLOWED_HOSTS lets the server answer to, beyond localhost
+ * and IPs. "*" means "any name" so there is nothing to print for it.
+ */
+function allowedHostNames(raw) {
+  return String(raw ?? "")
+    .split(",")
+    .map((h) => h.trim().toLowerCase())
+    .filter((h) => /^[a-z0-9]([a-z0-9.-]*[a-z0-9])?$/.test(h));
+}
+
+/** `url` re-addressed to each allowed hostname (same port and path). */
+function aliasUrls(url, names) {
+  return names.map((name) => {
+    const u = new URL(url);
+    u.hostname = name;
+    return u.href;
+  });
+}
+
+const aliasLines = (url, names) =>
+  aliasUrls(url, names)
+    .map((u) => `  Also → ${u}\n`)
+    .join("");
+
 /* ------------------------------------------------------------------ */
 /* Commands                                                           */
 /* ------------------------------------------------------------------ */
@@ -424,7 +449,8 @@ async function cmdStart(opts) {
       console.log(`  (ignoring --port ${opts.port}; \`beadscope stop\` first to move it)`);
     }
     const { fullUrl, open } = await showAndOpen(running.host, running.port, opts.open);
-    console.log(`  ${fullUrl}\n`);
+    console.log(`  ${fullUrl}`);
+    console.log(`${aliasLines(fullUrl, running.allowedHosts ?? [])}`);
     open();
     return;
   }
@@ -456,7 +482,10 @@ async function cmdStart(opts) {
     process.exit(1);
   }
 
-  const state = { pid: child.pid, port, host, startedAt: Date.now() };
+  // Recorded so `status` and an "already running" start report what this server
+  // accepts, not whatever the later shell happens to have exported.
+  const allowedHosts = allowedHostNames(process.env.BEADSCOPE_ALLOWED_HOSTS);
+  const state = { pid: child.pid, port, host, startedAt: Date.now(), allowedHosts };
   if (!writeStateExclusive(state)) {
     // Another `beadscope start` won the race between our check and now.
     signalServer(child.pid, "SIGKILL");
@@ -483,6 +512,7 @@ async function cmdStart(opts) {
   const { fullUrl, open } = await showAndOpen(host, port, opts.open);
   console.log(
     `\n  Beadscope → ${fullUrl}\n` +
+      aliasLines(fullUrl, allowedHosts) +
       `  Running in the background (pid ${child.pid}). Stop it with: beadscope stop\n`,
   );
   open();
@@ -523,6 +553,9 @@ async function cmdStatus() {
   console.log(
     `Beadscope is running\n` +
       `  URL:  ${serverUrl(state)}\n` +
+      aliasUrls(serverUrl(state), state.allowedHosts ?? [])
+        .map((u) => `  Also: ${u}\n`)
+        .join("") +
       `  PID:  ${state.pid}\n` +
       `  Up:   ${formatUptime(Date.now() - state.startedAt)}\n` +
       `  Log:  ${logFile()}`,
@@ -647,7 +680,11 @@ async function cmdRun(opts) {
   }
 
   const { fullUrl, open } = await showAndOpen(host, port, opts.open);
-  console.log(`\n  Beadscope → ${fullUrl}\n  (Ctrl+C to stop)\n`);
+  console.log(
+    `\n  Beadscope → ${fullUrl}\n` +
+      aliasLines(fullUrl, allowedHostNames(process.env.BEADSCOPE_ALLOWED_HOSTS)) +
+      `  (Ctrl+C to stop)\n`,
+  );
   open();
 }
 

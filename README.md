@@ -228,6 +228,10 @@ reverse proxy domain, allow it explicitly:
 BEADSCOPE_ALLOWED_HOSTS=mybox.local,tracker.example.com beadscope start
 ```
 
+`beadscope start` and `beadscope status` list each allowed name as an extra URL
+(`Also → http://mybox.local:3000/`). Point the name at this machine in `/etc/hosts`
+(add both `127.0.0.1` and `::1` lines, because the server listens on `localhost`).
+
 `BEADSCOPE_ALLOWED_HOSTS=*` accepts any hostname. That turns off the DNS-rebinding
 protection, so only use it when something else (a reverse proxy, a private
 network) decides who can reach Beadscope. Writes sent from other websites are
