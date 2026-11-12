@@ -132,7 +132,7 @@ detail links, and read-only protections also work in the grouped layout.
 
 ## Releases and updates
 
-[Latest stable release](https://github.com/brendan-appstart/bead-me-up-scotty/releases/latest)
+[Latest stable release](https://github.com/sai-manoj-kumar/beadscope/releases/latest)
 contains version-specific installation instructions, changes, and screenshots.
 The sidebar displays the running app version.
 

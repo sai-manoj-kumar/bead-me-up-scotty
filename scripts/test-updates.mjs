@@ -23,7 +23,7 @@ try {
  const release = commit('0.2.0'); git(remote,'tag','-a','v0.2.0','-m','release');
  const newest = commit('0.3.0'); git(remote,'tag','v0.3.0');
  const run = async (cmd,args,opts) => { if(cmd==='git') return {stdout:git(opts.cwd,...args),stderr:''}; fs.appendFileSync(path.join(root,'builds'),cmd+' '+args.join(' ')+'\n'); return {stdout:'ok',stderr:''}; };
- const options={cwd:clone,version:'0.1.0',repository:'brendan-appstart/bead-me-up-scotty',remote,fetch:http,run};
+ const options={cwd:clone,version:'0.1.0',repository:'sai-manoj-kumar/beadscope',remote,fetch:http,run};
  const updater=createUpdater(options);
  const s=await updater.check();
  assert.equal(s.channel,'stable'); assert.equal(s.updateAvailable,true); assert.equal(s.latestVersion,'0.2.0'); assert.equal(s.target.sha,release); assert.equal(s.target.tag,'v0.2.0');

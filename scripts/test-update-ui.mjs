@@ -10,7 +10,7 @@ try {
  const sha='1234567890abcdef1234567890abcdef12345678';
  await page.route('**/api/update/check*',route=>{
   checks++;const channel=new URL(route.request().url()).searchParams.get('channel')||'stable';
-  return route.fulfill({json:{channel,currentVersion:'0.1.0',latestVersion:'0.2.0',releaseUrl:'https://github.com/brendan-appstart/bead-me-up-scotty/releases/tag/v0.2.0',updateAvailable:true,canUpdate:!manual,manualReason:manual?'This installation needs a manual update. Follow the release instructions.':undefined,isGitRepo:!manual,supervised:false,behind:3,localSha:'abc1234',remoteSha:sha,target:manual?undefined:{channel,sha,tag:channel==='stable'?'v0.2.0':undefined}}});
+  return route.fulfill({json:{channel,currentVersion:'0.1.0',latestVersion:'0.2.0',releaseUrl:'https://github.com/sai-manoj-kumar/beadscope/releases/tag/v0.2.0',updateAvailable:true,canUpdate:!manual,manualReason:manual?'This installation needs a manual update. Follow the release instructions.':undefined,isGitRepo:!manual,supervised:false,behind:3,localSha:'abc1234',remoteSha:sha,target:manual?undefined:{channel,sha,tag:channel==='stable'?'v0.2.0':undefined}}});
  });
  await page.route('**/api/update/run',route=>{requests.push(route.request().postDataJSON());return route.fulfill({json:{ok:true,steps:[{name:'Build app',ok:true,output:''}],restarting:false,fromSha:'abc1234',toSha:sha}});});
  await page.goto(base+'/p/demo');
