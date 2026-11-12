@@ -17,13 +17,13 @@ their instructions use the new names:
 
 ## Beadscope versions
 
-Beadscope continues the original numbering instead of restarting it. `package.json`
-stays at **0.4.0**, the last original release this fork is built on, until the first
-Beadscope release.
+Beadscope continues the original numbering instead of restarting it. The last
+original release this fork is built on is **v0.4.0**.
 
-The first Beadscope release will be **v0.5.0**. It is a breaking release (new
-command name, new environment variable names, and a new config directory with a
-one-time copy of existing settings), so it gets a minor-version bump while the
-project is pre-1.0. Beadscope releases are published on this repository's
-[GitHub Releases](https://github.com/sai-manoj-kumar/beadscope/releases) page, with
-notes added here as `vX.Y.Z.md`. No Beadscope release has been published yet.
+`package.json` is now at **0.5.0**, the version of the first Beadscope release. It is
+a breaking release (new command name, new environment variable names, and a new
+config directory with a one-time copy of existing settings), so it gets a
+minor-version bump while the project is pre-1.0. Beadscope releases are published on
+this repository's [GitHub Releases](https://github.com/sai-manoj-kumar/beadscope/releases)
+page, with notes added here as `vX.Y.Z.md`. No Beadscope release has been published
+yet: v0.5.0 is not tagged, and its notes are not written.
