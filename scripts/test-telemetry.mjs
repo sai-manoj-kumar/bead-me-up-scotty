@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { spawn } from 'node:child_process';
 import { createTelemetry } from '../lib/telemetry.ts';
-const dir = mkdtempSync(join(tmpdir(), 'scotty-telemetry-'));
+const dir = mkdtempSync(join(tmpdir(), 'beadscope-telemetry-'));
 const file = join(dir, 'telemetry.json');
 let now = new Date('2026-09-08T12:00:00Z');
 const sent = [];
@@ -12,13 +12,15 @@ let offline = false;
 const options = { file, key: 'test-project-token', host: 'https://us.i.posthog.com', version: '1.2.3', now: () => now,
   send: async (url, init) => { sent.push({url, body: JSON.parse(init.body)}); if (offline) throw new Error('offline'); return new Response('1'); } };
 try {
+ // No token ships with the app: without an operator-supplied key nothing is sent.
  const freshEvents = [];
  const fresh = createTelemetry({...options, file:join(dir,'fresh.json'), key:undefined,
    send:async (_url,init)=>{freshEvents.push(JSON.parse(init.body)); return new Response('1');}});
  await fresh.capture();
- assert.equal(freshEvents.length,1,'a fresh installation must report without a local environment token');
- assert.match(freshEvents[0].api_key,/^phc_[A-Za-z0-9]+$/,'only a public capture token may ship');
- assert.deepEqual(fresh.settings(),{enabled:true,configured:true});
+ assert.equal(freshEvents.length,0,'a fresh installation must not report without an operator-supplied key');
+ assert.deepEqual(fresh.settings(),{enabled:true,configured:false});
+ assert.equal(createTelemetry({...options, file:join(dir,'empty.json'), key:'  ', send:async()=>{throw new Error('must not send');}}).settings().configured,false,'a blank key is not configured');
+ assert.doesNotMatch(readFileSync(new URL('../lib/telemetry.ts',import.meta.url),'utf8'),/phc_[A-Za-z0-9]{20,}/,'no PostHog token may be embedded in source');
  const t = createTelemetry(options);
  assert.equal(t.settings().enabled, true);
  await Promise.all([t.capture(), t.capture(), t.capture()]);

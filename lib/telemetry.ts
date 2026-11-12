@@ -2,9 +2,6 @@ import fs from "node:fs";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
 
-// Public ingestion-only project token: safe to distribute; never use a personal API key here.
-const DEFAULT_POSTHOG_KEY = "phc_rgigo4YQzZwrhRSzFkpBt2ZUuiKkRbXvN9wrCmn6Er4a";
-
 type State = { enabled: boolean };
 type Options = {
   file: string;
@@ -17,8 +14,9 @@ type Options = {
 
 /** Only this allowlisted event leaves the machine. No bead/config/request data is accepted. */
 export function createTelemetry(options: Options) {
-  // An explicit empty token is an operator-level opt-out.
-  const key = options.key ?? DEFAULT_POSTHOG_KEY;
+  // No token is bundled: reporting is off unless the operator supplies one
+  // (POSTHOG_KEY, a PostHog project token - never a personal API key).
+  const key = options.key ?? "";
   const now = options.now ?? (() => new Date());
   function read(): State {
     try {
