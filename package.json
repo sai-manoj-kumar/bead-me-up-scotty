@@ -1,7 +1,24 @@
 {
   "name": "beadscope",
   "version": "0.4.0",
-  "private": true,
+  "description": "A local web UI for the beads (bd) issue tracker",
+  "keywords": [
+    "beads",
+    "bd",
+    "issue-tracker",
+    "kanban",
+    "local-first",
+    "nextjs",
+    "cli"
+  ],
+  "homepage": "https://github.com/sai-manoj-kumar/beadscope#readme",
+  "bugs": {
+    "url": "https://github.com/sai-manoj-kumar/beadscope/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sai-manoj-kumar/beadscope.git"
+  },
   "license": "MIT",
   "author": "Sai Manoj Kumar Yadlapati",
   "bin": {
@@ -10,6 +27,11 @@
   "files": [
     "bin",
     ".next",
+    "!.next/cache",
+    "!.next/dev",
+    "!.next/types",
+    "!.next/trace*",
+    "!.next/diagnostics",
     "public",
     "next.config.ts"
   ],
@@ -21,7 +43,8 @@
     "build": "next build",
     "start": "next start",
     "serve": "node scripts/serve.mjs",
-    "lint": "eslint"
+    "lint": "eslint",
+    "prepack": "next build"
   },
   "dependencies": {
     "@11ty/eleventy": "^3.1.6",
@@ -76,5 +99,9 @@
       "version": ">=11.9",
       "onFail": "warn"
     }
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   }
 }
