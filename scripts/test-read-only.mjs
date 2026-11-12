@@ -1,9 +1,9 @@
-// Use an isolated demo server started with SCOTTY_READ_ONLY=1.
-// SCOTTY_TEST_URL=http://127.0.0.1:3000 node scripts/test-read-only.mjs
+// Use an isolated demo server started with BEADSCOPE_READ_ONLY=1.
+// BEADSCOPE_TEST_URL=http://127.0.0.1:3000 node scripts/test-read-only.mjs
 import assert from "node:assert/strict";
 import { chromium } from "playwright";
-const base = process.env.SCOTTY_TEST_URL;
-assert.ok(base, "Set SCOTTY_TEST_URL to an isolated demo server");
+const base = process.env.BEADSCOPE_TEST_URL;
+assert.ok(base, "Set BEADSCOPE_TEST_URL to an isolated demo server");
 const browser = await chromium.launch();
 try {
   const context = await browser.newContext();
@@ -61,7 +61,7 @@ try {
   await page.getByRole("dialog", { name: "Read Only Mode", exact: true }).waitFor({ state: "detached" });
   await banner.waitFor({ state: "detached" });
   await sibling.getByRole("button", { name: "Read Only Mode", exact: true }).waitFor({ state: "detached" });
-  const cookie = (await context.cookies()).find((c) => c.name === "scotty-viewer-mode");
+  const cookie = (await context.cookies()).find((c) => c.name === "beadscope-viewer-mode");
   assert.equal(cookie.expires, -1, "Editing preference must use a session cookie");
   assert.equal((await write(context)).status(), 201);
   assert.equal((await write(other)).status(), 403, "Other browser sessions must remain read-only");

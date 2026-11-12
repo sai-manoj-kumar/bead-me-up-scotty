@@ -8,8 +8,8 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 
-const base = process.env.SCOTTY_TEST_URL;
-assert.ok(base, 'Set SCOTTY_TEST_URL to an isolated app server');
+const base = process.env.BEADSCOPE_TEST_URL;
+assert.ok(base, 'Set BEADSCOPE_TEST_URL to an isolated app server');
 try { execFileSync('bd', ['--version'], { stdio: 'ignore' }); } catch {
   console.log('SKIP close actor: bd is not installed');
   process.exit(0);

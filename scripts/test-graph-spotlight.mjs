@@ -1,10 +1,10 @@
-// Run against an isolated app server: SCOTTY_TEST_URL=http://127.0.0.1:43188 node scripts/test-graph-spotlight.mjs
+// Run against an isolated app server: BEADSCOPE_TEST_URL=http://127.0.0.1:43188 node scripts/test-graph-spotlight.mjs
 // Project API requests are intercepted; this test is deliberately read-only.
 import assert from "node:assert/strict";
 import { chromium } from "playwright";
 
-const base = process.env.SCOTTY_TEST_URL;
-assert.ok(base, "Set SCOTTY_TEST_URL to an isolated app server");
+const base = process.env.BEADSCOPE_TEST_URL;
+assert.ok(base, "Set BEADSCOPE_TEST_URL to an isolated app server");
 
 const bead = (id, extra = {}) => ({
   id, title: id, issue_type: "task", status: "open", priority: 2,

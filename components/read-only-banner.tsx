@@ -4,8 +4,8 @@ import { LockKeyhole } from "lucide-react";
 import { useViewerMode } from "@/hooks/use-viewer-mode";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
-const KEY = "scotty.read-only-banner";
-const EVENT = "scotty:banner";
+const KEY = "beadscope.read-only-banner";
+const EVENT = "beadscope:banner";
 const DEFAULTS = { size: "small", background: "#fff3cd", text: "#664d03" };
 const INITIAL = JSON.stringify(DEFAULTS);
 let fallback = INITIAL;

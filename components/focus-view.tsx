@@ -18,7 +18,7 @@ import type { Bead } from "@/lib/schema";
  * the Board/List views — that's the point: an optional screen that answers
  * "what's in flight, what's stuck, what would I pick up next" without scrolling.
  *
- * Lane chips: when SCOTTY_LANE_PREFIX is set (e.g. "ctx:"), one chip per lane
+ * Lane chips: when BEADSCOPE_LANE_PREFIX is set (e.g. "ctx:"), one chip per lane
  * label found on the visible beads filters all three columns — a one-click
  * "show me this lane's now". Unset → no chips.
  */

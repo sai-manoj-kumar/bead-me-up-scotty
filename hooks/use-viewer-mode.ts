@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
 
 const KEY = ["viewer-mode"];
-const CHANNEL = "scotty-viewer-mode";
+const CHANNEL = "beadscope-viewer-mode";
 
 export function useViewerMode() {
   const qc = useQueryClient();

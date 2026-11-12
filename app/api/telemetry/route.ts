@@ -1,5 +1,5 @@
 import path from "node:path";
-import os from "node:os";
+import { configDir } from "@/lib/config";
 import { createTelemetry } from "@/lib/telemetry";
 import { APP_VERSION } from "@/lib/build-info";
 
@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 const telemetry = createTelemetry({
-  file: path.join(process.env.XDG_CONFIG_HOME || path.join(os.homedir(), ".config"), "bead-me-up-scotty", "telemetry.json"),
+  file: path.join(configDir(), "telemetry.json"),
   key: process.env.POSTHOG_KEY,
   host: process.env.POSTHOG_HOST || "https://us.i.posthog.com",
   version: APP_VERSION,

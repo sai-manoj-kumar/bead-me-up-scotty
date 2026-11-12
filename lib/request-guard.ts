@@ -14,7 +14,7 @@
  *   still sends the attacker's name in Host, so only names that cannot be
  *   rebound are answered: localhost, *.localhost and IP literals. Anything
  *   else (a LAN hostname, a reverse-proxy domain) is opt-in through
- *   SCOTTY_ALLOWED_HOSTS.
+ *   BEADSCOPE_ALLOWED_HOSTS.
  *
  * Non-browser clients (the launcher, curl, scripts) send no Origin and are
  * unaffected. Kept free of imports so scripts/test-request-guard.mjs can load it
@@ -28,7 +28,7 @@ export type GuardInput = {
   host: string | null;
   origin: string | null;
   secFetchSite: string | null;
-  /** Comma-separated SCOTTY_ALLOWED_HOSTS value; "*" disables the Host check. */
+  /** Comma-separated BEADSCOPE_ALLOWED_HOSTS value; "*" disables the Host check. */
   allowedHosts?: string;
 };
 
@@ -81,8 +81,8 @@ export function checkRequest(input: GuardInput): GuardVerdict {
       ok: false,
       code: "host_not_allowed",
       error: `Scotty only answers requests addressed to localhost or an IP address. ` +
-        `To open it as "${name}", start it with SCOTTY_ALLOWED_HOSTS=${name} ` +
-        `(or SCOTTY_ALLOWED_HOSTS=* to accept any hostname).`,
+        `To open it as "${name}", start it with BEADSCOPE_ALLOWED_HOSTS=${name} ` +
+        `(or BEADSCOPE_ALLOWED_HOSTS=* to accept any hostname).`,
     };
   }
   if (SAFE_METHODS.has(method.toUpperCase())) return { ok: true };
@@ -105,7 +105,7 @@ export function checkRequest(input: GuardInput): GuardVerdict {
         code: "cross_origin",
         error: name
           ? `Refused a change sent from ${name}, which is not this Scotty's address. If you open Scotty through ` +
-            `${name} (for example a reverse proxy), start it with SCOTTY_ALLOWED_HOSTS=${name}.`
+            `${name} (for example a reverse proxy), start it with BEADSCOPE_ALLOWED_HOSTS=${name}.`
           : "Refused a change sent from a sandboxed or local page (no web address).",
       };
     }

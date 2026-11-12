@@ -1,12 +1,11 @@
 {
-  "name": "bead-me-up-scotty",
+  "name": "beadscope",
   "version": "0.4.0",
   "private": true,
   "license": "MIT",
   "author": "Brendan <brendan@appstart.one>",
   "bin": {
-    "bead-me-up-scotty": "bin/bead-me-up-scotty.mjs",
-    "scotty": "bin/bead-me-up-scotty.mjs"
+    "beadscope": "bin/beadscope.mjs"
   },
   "files": [
     "bin",

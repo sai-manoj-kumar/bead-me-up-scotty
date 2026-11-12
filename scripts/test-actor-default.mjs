@@ -22,8 +22,8 @@ let n = 0;
 /** Run getConfig() (and optionally saveConfig) in a fresh process. */
 function load({ cwd = gitRepo, env = {}, onDisk, save } = {}) {
   const xdg = path.join(scratch, `xdg-${n++}`);
-  fs.mkdirSync(path.join(xdg, 'bead-me-up-scotty'), { recursive: true });
-  if (onDisk) fs.writeFileSync(path.join(xdg, 'bead-me-up-scotty', 'config.json'), JSON.stringify(onDisk));
+  fs.mkdirSync(path.join(xdg, 'beadscope'), { recursive: true });
+  if (onDisk) fs.writeFileSync(path.join(xdg, 'beadscope', 'config.json'), JSON.stringify(onDisk));
   const script = `
     const { getConfig, saveConfig } = await import(${JSON.stringify(configModule)});
     ${save ? `saveConfig(${JSON.stringify(save)});` : ''}
@@ -57,7 +57,7 @@ try {
   assert.equal(load({ onDisk: { humanActor: 'Someone Else', humanAllowlist: ['Someone Else'], projects: [] } }).humanActor, 'Someone Else', 'a non-default name is kept');
   c = load({ save: { humanActor: osUser } });
   assert.equal(c.humanActorChosen, true);
-  const saved = JSON.parse(fs.readFileSync(path.join(c.xdg, 'bead-me-up-scotty', 'config.json'), 'utf8'));
+  const saved = JSON.parse(fs.readFileSync(path.join(c.xdg, 'beadscope', 'config.json'), 'utf8'));
   assert.equal(saved.humanActor, osUser);
   assert.equal(saved.humanActorChosen, true, 'saving from Settings records the choice');
   assert.equal(load({ onDisk: saved }).humanActor, osUser, 'the saved choice survives a restart');

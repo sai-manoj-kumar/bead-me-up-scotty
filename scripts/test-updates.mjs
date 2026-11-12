@@ -17,7 +17,7 @@ const http = async url => {
 };
 try {
  fs.mkdirSync(remote); git(remote,'init','-b','main'); git(remote,'config','user.email','test@example.invalid'); git(remote,'config','user.name','Test');
- const commit = version => { fs.writeFileSync(path.join(remote,'package.json'), JSON.stringify({name:'bead-me-up-scotty',version})); git(remote,'add','.'); git(remote,'commit','-m',version); return git(remote,'rev-parse','HEAD'); };
+ const commit = version => { fs.writeFileSync(path.join(remote,'package.json'), JSON.stringify({name:'beadscope',version})); git(remote,'add','.'); git(remote,'commit','-m',version); return git(remote,'rev-parse','HEAD'); };
  const old = commit('0.1.0');
  git(root,'clone',remote,clone); git(clone,'config','user.email','test@example.invalid'); git(clone,'config','user.name','Test');
  const release = commit('0.2.0'); git(remote,'tag','-a','v0.2.0','-m','release');

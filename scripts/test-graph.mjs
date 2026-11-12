@@ -1,10 +1,10 @@
-// Run against an isolated app server: SCOTTY_TEST_URL=http://127.0.0.1:3000 node scripts/test-graph.mjs
+// Run against an isolated app server: BEADSCOPE_TEST_URL=http://127.0.0.1:3000 node scripts/test-graph.mjs
 // Project API requests are intercepted; this test never edits a real Beads store.
 import assert from "node:assert/strict";
 import { chromium } from "playwright";
 
-const base = process.env.SCOTTY_TEST_URL;
-assert.ok(base, "Set SCOTTY_TEST_URL to an isolated app server");
+const base = process.env.BEADSCOPE_TEST_URL;
+assert.ok(base, "Set BEADSCOPE_TEST_URL to an isolated app server");
 const bead = (id, extra = {}) => ({
   id, title: id, issue_type: "task", status: "open", priority: 2,
   created_at: "2026-09-01T00:00:00Z", updated_at: "2026-09-01T00:00:00Z",

@@ -114,7 +114,7 @@ export function createUpdater(options: Options) {
       await git("fetch", "--quiet", "--no-tags", "--no-write-fetch-head", remote, target.sha);
       if (target.channel === "stable") {
         const manifest = JSON.parse(await git("show", `${target.sha}:package.json`));
-        if (manifest.name !== "bead-me-up-scotty" || manifest.version !== target.tag!.replace(/^v/, "")) throw new Error("Release tag and package version do not match.");
+        if (manifest.name !== "beadscope" || manifest.version !== target.tag!.replace(/^v/, "")) throw new Error("Release tag and package version do not match.");
       }
       const fromSha = await git("rev-parse", "HEAD");
       try { await git("merge-base", "--is-ancestor", fromSha, target.sha); }
