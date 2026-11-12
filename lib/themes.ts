@@ -41,3 +41,35 @@ export function isThemeId(id: string): boolean {
 export function getTheme(id: string | null | undefined): ThemeDef {
   return (id ? BY_ID.get(id) : undefined) ?? BY_ID.get(DEFAULT_THEME_ID)!;
 }
+
+/**
+ * "System" is a *choice*, not a palette: it has no `html[data-theme]` block of
+ * its own and resolves to Light or Dark from the OS `prefers-color-scheme`.
+ * It lives outside THEMES so palette enumerations stay palettes-only; the
+ * picker prepends it explicitly.
+ */
+export const SYSTEM_CHOICE_ID = "system";
+
+export const SYSTEM_CHOICE: ThemeDef = {
+  id: SYSTEM_CHOICE_ID,
+  name: "System",
+  mode: "light",
+  // Left half light, right half dark so the swatch reads as "follows the OS".
+  swatch: ["#f6f6f8", "#1d1d22", "#6d5ef0"],
+};
+
+/** What a project uses until the user picks something. */
+export const DEFAULT_CHOICE_ID = SYSTEM_CHOICE_ID;
+
+/** Normalizes a stored value to a valid choice id (palette id or "system"). */
+export function getChoiceId(stored: string | null | undefined): string {
+  if (stored === SYSTEM_CHOICE_ID) return SYSTEM_CHOICE_ID;
+  return stored && BY_ID.has(stored) ? stored : DEFAULT_CHOICE_ID;
+}
+
+/** Resolves a choice to a concrete palette, given the OS preference. */
+export function resolveChoice(choice: string, prefersDark: boolean): ThemeDef {
+  return choice === SYSTEM_CHOICE_ID
+    ? BY_ID.get(prefersDark ? "dark" : "light")!
+    : getTheme(choice);
+}

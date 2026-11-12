@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Icon } from "@/components/icons";
 import { useTheme } from "@/components/theme-provider";
-import { THEMES } from "@/lib/themes";
+import { SYSTEM_CHOICE, THEMES } from "@/lib/themes";
 import { useApp } from "@/components/app-context";
 import { api, type DoctorResponse } from "@/lib/api-client";
 import { useNotificationPrefs, type NotifPrefs } from "@/hooks/use-notifications";
@@ -82,7 +82,7 @@ function DefaultViewSetting() {
 }
 
 function SettingsForm({ data }: { data: DoctorResponse }) {
-  const { theme, setTheme } = useTheme();
+  const { theme, choice, setTheme } = useTheme();
   const qc = useQueryClient();
   const [actor, setActor] = React.useState(data.config.humanActor);
   const [allowlist, setAllowlist] = React.useState<string[]>(data.config.humanAllowlist);
@@ -227,12 +227,12 @@ function SettingsForm({ data }: { data: DoctorResponse }) {
             <div className="text-[13px]">Theme</div>
             <div className="text-[11.5px] text-[var(--text-3)]">
               Saved per project — each project remembers its own theme on this device.
-              Currently <span className="font-[550] text-[var(--text-2)]">{theme.name}</span>.
+              Currently <span className="font-[550] text-[var(--text-2)]">{choice === SYSTEM_CHOICE.id ? `System (${theme.name})` : theme.name}</span>.
             </div>
           </div>
           <div className="grid grid-cols-2 gap-[8px] sm:grid-cols-3">
-            {THEMES.map((t) => {
-              const active = t.id === theme.id;
+            {[SYSTEM_CHOICE, ...THEMES].map((t) => {
+              const active = t.id === choice;
               return (
                 <button
                   key={t.id}
@@ -254,7 +254,7 @@ function SettingsForm({ data }: { data: DoctorResponse }) {
                       {t.name}
                     </span>
                     <span className="block text-[10.5px] capitalize text-[var(--text-3)]">
-                      {t.mode}
+                      {t.id === SYSTEM_CHOICE.id ? "follows OS" : t.mode}
                     </span>
                   </span>
                 </button>
