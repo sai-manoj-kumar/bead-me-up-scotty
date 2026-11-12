@@ -8,7 +8,7 @@ your files, or run commands is a security issue, and we want to hear about it.
 ## Supported versions
 
 Security fixes go into the latest release only. Upgrade to the
-[latest stable release](https://github.com/brendan-appstart/bead-me-up-scotty/releases/latest)
+[latest stable release](https://github.com/sai-manoj-kumar/beadscope/releases/latest)
 before reporting, if you can.
 
 | Version | Supported |
@@ -22,7 +22,7 @@ before reporting, if you can.
 vulnerability.**
 
 Report it privately through GitHub instead:
-[**Report a vulnerability**](https://github.com/brendan-appstart/bead-me-up-scotty/security/advisories/new)
+[**Report a vulnerability**](https://github.com/sai-manoj-kumar/beadscope/security/advisories/new)
 (the *Security* tab, then *Report a vulnerability*). Only the maintainers can
 see the report.
 
