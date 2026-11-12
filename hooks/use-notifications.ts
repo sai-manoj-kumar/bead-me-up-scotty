@@ -88,6 +88,10 @@ export function activateNotification(projectId: string, beadId: string) {
     // mounted. In that narrow window, fall through to the URL landing route.
     if (!window.dispatchEvent(event)) return;
   }
+  // Full-page navigation on purpose: this runs outside React (from a notification
+  // click, possibly before the target project shell has mounted), so there is no
+  // router to call, and a fresh load guarantees the incoming AppShell sees ?bead=.
+  // eslint-disable-next-line @next/next/no-location-assign-relative-destination
   window.location.assign(`/p/${encodeURIComponent(projectId)}?bead=${encodeURIComponent(beadId)}`);
 }
 
