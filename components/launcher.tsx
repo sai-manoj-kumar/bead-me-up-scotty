@@ -29,7 +29,7 @@ export function Launcher() {
           <Icon name="logo" size={19} />
         </div>
         <div className="flex-1 leading-[1.15]">
-          <div className="text-[16px] font-[680] tracking-[-.01em]">Bead Me Up, Scotty</div>
+          <div className="text-[16px] font-[680] tracking-[-.01em]">Beadscope</div>
           <div className="text-[12px] text-[var(--text-3)]">
             Choose a beads project to view and manage
           </div>

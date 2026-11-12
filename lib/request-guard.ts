@@ -1,7 +1,7 @@
 /**
  * Cross-site request guard for the local server (used by proxy.ts).
  *
- * Scotty listens on a predictable localhost port and can write beads, register
+ * Beadscope listens on a predictable localhost port and can write beads, register
  * project folders and run the self-updater. Two browser attacks reach such a
  * server from an ordinary web page:
  *
@@ -10,7 +10,7 @@
  *   always attach an Origin header to such requests, so a write whose Origin
  *   differs from the addressed Host is refused.
  * - DNS rebinding: an attacker's hostname re-resolves to 127.0.0.1, making the
- *   page same-origin with Scotty, so it could read responses too. The browser
+ *   page same-origin with Beadscope, so it could read responses too. The browser
  *   still sends the attacker's name in Host, so only names that cannot be
  *   rebound are answered: localhost, *.localhost and IP literals. Anything
  *   else (a LAN hostname, a reverse-proxy domain) is opt-in through
@@ -80,7 +80,7 @@ export function checkRequest(input: GuardInput): GuardVerdict {
     return {
       ok: false,
       code: "host_not_allowed",
-      error: `Scotty only answers requests addressed to localhost or an IP address. ` +
+      error: `Beadscope only answers requests addressed to localhost or an IP address. ` +
         `To open it as "${name}", start it with BEADSCOPE_ALLOWED_HOSTS=${name} ` +
         `(or BEADSCOPE_ALLOWED_HOSTS=* to accept any hostname).`,
     };
@@ -104,7 +104,7 @@ export function checkRequest(input: GuardInput): GuardVerdict {
         ok: false,
         code: "cross_origin",
         error: name
-          ? `Refused a change sent from ${name}, which is not this Scotty's address. If you open Scotty through ` +
+          ? `Refused a change sent from ${name}, which is not this Beadscope's address. If you open Beadscope through ` +
             `${name} (for example a reverse proxy), start it with BEADSCOPE_ALLOWED_HOSTS=${name}.`
           : "Refused a change sent from a sandboxed or local page (no web address).",
       };

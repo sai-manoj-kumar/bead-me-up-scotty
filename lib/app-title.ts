@@ -1,4 +1,4 @@
-export const APP_TITLE = "Bead Me Up, Scotty";
+export const APP_TITLE = "Beadscope";
 
 export function projectTitle(projectName: string): string {
   const prefix = projectName.trim();
