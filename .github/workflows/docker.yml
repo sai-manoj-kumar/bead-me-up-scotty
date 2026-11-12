@@ -1,0 +1,68 @@
+name: Docker
+
+# Builds the image and smoke-tests it on pull requests that touch it, so the
+# Dockerfile cannot quietly break. Nothing is published: there is no image on
+# a registry, and people who want one build it from the README's instructions.
+on:
+  pull_request:
+    paths:
+      - Dockerfile
+      - .dockerignore
+      - package.json
+      - package-lock.json
+      - next.config.ts
+      - .github/workflows/docker.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: docker-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    name: smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0 # the build number is the commit count
+
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4
+
+      - name: Build metadata
+        id: meta
+        run: |
+          echo "number=$(git rev-list --count HEAD)" >> "$GITHUB_OUTPUT"
+          echo "sha=$(git rev-parse --short=7 HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Build (linux/amd64)
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
+        with:
+          context: .
+          load: true
+          tags: beadscope:smoke
+          build-args: |
+            BUILD_NUMBER=${{ steps.meta.outputs.number }}
+            BUILD_SHA=${{ steps.meta.outputs.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Start the container and check it serves
+        run: |
+          docker run -d --name beadscope -p 3000:3000 beadscope:smoke
+          for i in $(seq 1 30); do
+            curl -fsS -o /dev/null http://localhost:3000/ && break
+            sleep 1
+          done
+          curl -fsS -o /dev/null -w "/: %{http_code}\n" http://localhost:3000/
+          curl -fsS -o /dev/null -w "/api/projects: %{http_code}\n" http://localhost:3000/api/projects
+          docker exec beadscope bd --version
+          docker exec beadscope id -un
+
+      - name: Container logs
+        if: failure()
+        run: docker logs beadscope
