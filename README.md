@@ -1,9 +1,9 @@
 <div align="center">
 
-<h1>🛸 Bead Me Up, Scotty</h1>
+<h1>Beadscope</h1>
 
 <p>
-  <b>The free, open-source visual UI for <a href="https://github.com/gastownhall/beads">Beads</a></b> — Steve Yegge's
+  <b>A free, open-source visual UI for <a href="https://github.com/gastownhall/beads">Beads</a></b> — Steve Yegge's
   graph-based issue tracker for AI coding agents.<br/>
   <i>Brainstorm, create, and organize work in the same place your AI agent does.</i>
 </p>
@@ -13,7 +13,7 @@
     <td>
       <p><strong>✨ A rich, interactive workspace for Beads</strong></p>
       <p><strong>Create beads, edit their details, drag them between columns, and change their status directly in the UI.</strong> Organize subtasks, connect dependencies, and steer the work alongside your AI agents — with changes written back to Beads.</p>
-      <p>This is why Scotty was built: to give humans a visual way to <strong>work with beads</strong>, beyond simply viewing them.</p>
+      <p>Beadscope gives humans a visual way to <strong>work with beads</strong>, beyond simply viewing them.</p>
     </td>
   </tr>
 </table>
@@ -21,21 +21,16 @@
 <p>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-6d5ef0?style=flat-square" alt="MIT License"></a>
   <img src="https://img.shields.io/badge/Next.js-16-black?style=flat-square&logo=next.js&logoColor=white" alt="Next.js 16">
-  <img src="https://img.shields.io/badge/Run_anywhere-scotty-22c55e?style=flat-square" alt="Global CLI: scotty">
-  <a href="https://github.com/brendan-appstart/bead-me-up-scotty/stargazers"><img src="https://img.shields.io/github/stars/brendan-appstart/bead-me-up-scotty?style=flat-square&color=eab308" alt="GitHub stars"></a>
+  <img src="https://img.shields.io/badge/Run_anywhere-beadscope-22c55e?style=flat-square" alt="Global CLI: beadscope">
 </p>
 
-<a href="https://youtu.be/0zpg_FRX-wE" title="Watch the 2-minute demo">
-  <img src=".github/screens/board.png" alt="Bead Me Up, Scotty — click to watch the demo" width="860">
-</a>
-
-<p><b>▶️ <a href="https://youtu.be/0zpg_FRX-wE">Watch the 2-minute demo</a></b></p>
+<img src=".github/screens/board.png" alt="Beadscope board view" width="860">
 
 <p>
-  <a href="https://beadmeupscotty.com"><b>🌐 Website</b></a> ·
-  <a href="https://youtu.be/0zpg_FRX-wE"><b>▶️ Demo video</b></a> ·
-  <a href="https://github.com/brendan-appstart/bead-me-up-scotty"><b>⭐ Star the repo</b></a> ·
-  <a href="https://github.com/gastownhall/beads"><b>🧵 Beads</b></a>
+  <a href="#quick-install"><b>Quick install</b></a> ·
+  <a href="#features"><b>Features</b></a> ·
+  <a href="https://github.com/gastownhall/beads"><b>🧵 Beads</b></a> ·
+  <a href="SECURITY.md"><b>Security</b></a>
 </p>
 
 <table>
@@ -51,21 +46,33 @@
 
 A local, single-user web UI for **[beads](https://github.com/gastownhall/beads)**
 (`bd`) — Steve Yegge's distributed graph issue tracker. beads ships a powerful CLI
-but no interactive visualizer that also lets you *create* work. This app is that
+but no interactive visualizer that also lets you *create* work. Beadscope is that
 visualizer: a fast, graph-aware task board for humans, on top of a tracker built
 for AI agents.
 
+Beadscope is a fork of [Bead Me Up, Scotty](https://github.com/brendan-appstart/bead-me-up-scotty)
+by Brendan; see [Credits](#credits).
+
 ## Quick install
 
-With [Homebrew](https://brew.sh) (macOS or Linux):
+Requires **Node 20+**, npm and git. For live data you also need the
+[`bd`](https://github.com/gastownhall/beads) binary on your `PATH`; without it,
+Beadscope runs in demo mode.
 
 ```bash
-brew install brendan-appstart/tap/bead-me-up-scotty
-beadscope start      # runs in the background; `beadscope stop` stops it
+git clone https://github.com/sai-manoj-kumar/beadscope.git
+cd beadscope
+npm install
+npm run build
+npm link
+beadscope start        # runs in the background; `beadscope stop` stops it
 ```
 
-Update with `brew upgrade bead-me-up-scotty`. Other options (from source, global
-npm, Docker) are below.
+Run `beadscope start` from a folder that has a `.beads` repo to open straight to
+that project, or from anywhere to get the project picker. The global command is a
+symlink to your clone, so keep the folder and re-run `npm run build` after pulling
+changes. More options (a standalone global copy, running from source, Docker) are
+below; see [Install globally](#install-globally).
 
 ## Features
 
@@ -118,9 +125,10 @@ detail links, and read-only protections also work in the grouped layout.
   (`bd … --json`, `BD_JSON_ENVELOPE=1`). `bd` stays the single source of truth —
   the app adds **zero** new persisted schema. The only adapter is
   [`lib/bd.ts`](lib/bd.ts); see the spec in [`design/design.md`](design/design.md).
-- The UI was designed in **Claude Design** and rebuilt faithfully here with
-  Next.js + shadcn/Tailwind. The original export and a screen/token map live in
-  [`design/ui-export/`](design/ui-export/).
+- The UI began as a **Claude Design** export (from the original project) and is
+  rebuilt faithfully here with Next.js + shadcn/Tailwind. The original export and
+  a screen/token map live in [`design/ui-export/`](design/ui-export/); those files
+  still use the original project's name.
 
 ### Backlog & attribution (design decisions)
 - **Backlog** maps to beads' built-in `deferred` status; **Ready** = open &
@@ -132,9 +140,11 @@ detail links, and read-only protections also work in the grouped layout.
 
 ## Releases and updates
 
-[Latest stable release](https://github.com/sai-manoj-kumar/beadscope/releases/latest)
-contains version-specific installation instructions, changes, and screenshots.
-The sidebar displays the running app version.
+Releases are published on this repository's
+[GitHub Releases](https://github.com/sai-manoj-kumar/beadscope/releases) page; none
+have been published yet, so until one exists the stable channel reports no update
+and the **Development (main)** channel is the way to follow changes. The sidebar
+displays the running app version.
 
 In **Settings → Software updates**, choose **Stable releases** (the default) or
 **Development (main)**. Stable checks published GitHub releases for all installation
@@ -150,7 +160,8 @@ need a manual restart. Local changes or diverged history must be resolved first.
 Global copies, source downloads, and Docker installations receive the notice with
 manual update instructions. No update is installed automatically.
 
-See [v0.2.0 release notes](docs/releases/v0.2.0.md) for the first versioned release.
+Release notes for the versions published by the original project are kept in
+[`docs/releases/`](docs/releases/).
 
 ## Run it
 
@@ -198,19 +209,19 @@ session cookie preserves it through reloads; browser session restoration may
 also restore that cookie. Other browser sessions are unaffected. Settings lets
 you enable it again after dismissing the banner.
 
-Set `BEADSCOPE_READ_ONLY=1` (or `true`) when launching Scotty to make read-only the
+Set `BEADSCOPE_READ_ONLY=1` (or `true`) when launching Beadscope to make read-only the
 default for new browser sessions. A browser can explicitly override that default
 from the banner. This is a local viewing preference, not a permissions system.
 Project write requests are rejected by the server while the requesting browser
 is read-only; application settings remain available.
 
-### Opening Scotty by a hostname
+### Opening Beadscope by a hostname
 
-Scotty only answers browsers that address it as `localhost` (or `*.localhost`)
+Beadscope only answers browsers that address it as `localhost` (or `*.localhost`)
 or by an IP address such as `127.0.0.1` or `192.168.1.20`. Requests that arrive
 under any other hostname, and writes sent from another website, are refused.
 This stops web pages you visit from changing your beads or reading them through
-DNS rebinding. If you reach Scotty through a LAN name (`mybox.local`) or a
+DNS rebinding. If you reach Beadscope through a LAN name (`mybox.local`) or a
 reverse proxy domain, allow it explicitly:
 
 ```bash
@@ -219,10 +230,10 @@ BEADSCOPE_ALLOWED_HOSTS=mybox.local,tracker.example.com beadscope start
 
 `BEADSCOPE_ALLOWED_HOSTS=*` accepts any hostname. That turns off the DNS-rebinding
 protection, so only use it when something else (a reverse proxy, a private
-network) decides who can reach Scotty. Writes sent from other websites are
+network) decides who can reach Beadscope. Writes sent from other websites are
 still refused even with `*`; to accept writes from a proxy's address, list
 that name explicitly. Each refusal explains which setting would allow it, both
-in the browser and once in the terminal running Scotty.
+in the browser and once in the terminal running Beadscope.
 
 Scripts and tools that call the API at `localhost` or an IP address are
 unaffected; only browser requests carry the `Origin` header that the
@@ -275,7 +286,7 @@ Container limitations:
   override with `--build-arg BD_VERSION=<version>` to match your host.
 - Opening the container as `http://localhost:3000` or by IP works as-is; to use
   a hostname, pass `-e BEADSCOPE_ALLOWED_HOSTS=<name>` (see
-  [Opening Scotty by a hostname](#opening-beadscope-by-a-hostname)).
+  [Opening Beadscope by a hostname](#opening-beadscope-by-a-hostname)).
 
 ## Install globally
 
@@ -311,7 +322,7 @@ The log is reset on every `start`.
 **Recommended — `npm link` (keep the clone):**
 
 ```bash
-git clone <repo-url> beadscope
+git clone https://github.com/sai-manoj-kumar/beadscope.git beadscope
 cd beadscope
 npm install
 npm run build
@@ -325,7 +336,7 @@ The global command is a symlink to the clone, so keep it on disk and re-run
 **Alternative — global copy (clone is deletable):**
 
 ```bash
-git clone <repo-url> beadscope
+git clone https://github.com/sai-manoj-kumar/beadscope.git beadscope
 cd beadscope
 npm install
 rm -rf .next           # ensure a clean build (only the prod build is shipped)
@@ -367,6 +378,50 @@ npm run build         # typecheck + production build
 npm run lint          # eslint
 ```
 
+## Usage statistics
+
+**Off by default.** Beadscope bundles no analytics token, so it sends nothing
+anywhere unless an operator supplies one. Cloning, installing, or opening the app
+does not send an event.
+
+To enable reporting, set `POSTHOG_KEY` to your own PostHog **project token** (never
+a personal API key) and, if needed, `POSTHOG_HOST` to your ingestion endpoint
+(default: `https://us.i.posthog.com`). These are runtime environment settings;
+Next.js also loads them from a local `.env`. Do not commit `.env` or private API
+keys. With no key (or an explicitly empty `POSTHOG_KEY=`), **Settings → Usage
+statistics** reports that reporting is not configured and no events are sent.
+
+When a key is set, the UI reports one `app_active` event per UTC day while it is
+used. **Settings → Usage statistics → Share basic usage statistics** turns that
+off for all projects and browsers connected to the local server; it does not delete
+events already received. The preference lives in
+`$XDG_CONFIG_HOME/beadscope/telemetry.json` (default:
+`~/.config/beadscope/telemetry.json`), outside the Beads database. The random
+installation ID is stored alongside it in `telemetry.json.id`; daily event records,
+attempt reservations, and acknowledgements live in `telemetry.json.days/`.
+
+An event contains only the random installation and event IDs, the app version, a
+timestamp, and PostHog flags that disable person profiles and GeoIP enrichment. No
+browser analytics SDK is loaded, and no automatic page/click capture or session
+recording is enabled. Bead content, project names and paths, user names, emails,
+URLs, and browser headers are never included. The analytics service still receives
+the network connection and records the app server's IP address, even with GeoIP
+enrichment disabled. An idle server or background tab sends nothing. Failures time
+out after three seconds and never affect app operations; failed deliveries can retry
+during later UI use, at least ten minutes apart and at most three attempts per UTC
+day, keeping the same event ID so the service can deduplicate. Past days are not
+backfilled, and opting out stops pending retries.
+
+Verify the capture and privacy rules (including that no token is bundled) with
+`node scripts/test-telemetry.mjs` (Node 22.18+ for native TypeScript support). The
+tests use temporary local storage and a fake network transport; they do not send
+events.
+
+For the Settings browser checks, start an isolated server with
+`XDG_CONFIG_HOME=/tmp/beadscope-usage-test POSTHOG_KEY='' BEADS_DEMO=1 BEADSCOPE_READ_ONLY=1 npm run start -- --port 3197`,
+then run `BEADSCOPE_TEST_URL=http://localhost:3197 node scripts/test-telemetry-ui.mjs`.
+The test refuses to run against an installation configured to send events.
+
 ## Security
 
 Please report vulnerabilities privately, not in a public issue. See
@@ -374,81 +429,13 @@ Please report vulnerabilities privately, not in a public issue. See
 
 ## License
 
-[MIT](LICENSE) © Brendan
+[MIT](LICENSE).
 
-### Basic usage statistics
+## Credits
 
-Scotty ships with a public, ingestion-only PostHog project token and reports one
-`app_active` event per UTC day while the UI is used. **Fresh installations are
-enabled and configured by default; no `.env` setup is needed.** Cloning or
-installing alone does not send an event; opening the app does.
-
-Operators can set `POSTHOG_KEY` to their own PostHog **project token**, never a
-personal API key, and `POSTHOG_HOST` to their ingestion endpoint (default:
-`https://us.i.posthog.com`). An explicitly empty `POSTHOG_KEY=` disables reporting
-even when the preference is on. These are runtime environment settings; Next.js
-also loads them from a local `.env`. Do not commit `.env` or private API keys.
-
-**Settings → Usage statistics → Share basic usage statistics** is enabled by
-default. Switching it off stops future events across all projects and browsers
-connected to that local server. It does not delete previously received events.
-The preference lives in
-`$XDG_CONFIG_HOME/beadscope/telemetry.json` (default:
-`~/.config/beadscope/telemetry.json`), outside the Beads database.
-The random installation ID is stored alongside it in `telemetry.json.id`;
-daily event records, attempt reservations, and acknowledgements live in
-`telemetry.json.days/`. They coordinate server processes without a lock that
-could remain stuck after a crash. Existing opt-outs and daily reservations
-remain honored after an update.
-
-Scotty sends only the random installation/event IDs, app version, timestamp,
-and PostHog flags that disable person profiles and GeoIP enrichment. No browser analytics SDK is
-loaded; no automatic page/click capture or session recording is enabled. Bead
-content, project names/paths, user names, emails, URLs, and browser headers are
-never included. PostHog receives the network connection and records the app
-server's IP address, even though GeoIP enrichment is disabled.
-An idle server/background tab sends nothing. Failures time out after three
-seconds and never affect app operations. Failed deliveries can retry during
-later UI use, at least ten minutes apart and at most three attempts per UTC day.
-Retries retain the same event ID and timestamp for PostHog's eventual
-deduplication; no past days are backfilled. Opting out stops pending retries.
-If the preference cannot be read or the daily reservation cannot be saved,
-reporting stops.
-
-In PostHog, create a Product Analytics trend for `app_active`, choose **Unique
-users**, and use daily, weekly, or monthly intervals. This measures approximate
-active **installations**, not people: multiple machines count separately, shared
-servers count once, and offline or opted-out installations are absent. Deleting the preference file restores the default setting; deleting the ID file
-resets the installation identity.
-
-Verify the capture and privacy rules with `node scripts/test-telemetry.mjs`
-(Node 22.18+ for native TypeScript support). The tests use temporary local storage
-and a fake network transport; they do not send production events.
-
-For the Settings browser checks, start an isolated server with
-`XDG_CONFIG_HOME=/tmp/beadscope-usage-test POSTHOG_KEY='' BEADS_DEMO=1 BEADSCOPE_READ_ONLY=1 npm run start -- --port 3197`,
-then run `BEADSCOPE_TEST_URL=http://localhost:3197 node scripts/test-telemetry-ui.mjs`.
-The test refuses to run against an installation configured to send events.
-
-## A small usage signal, and a thank you
-
-When PostHog reporting is configured, Scotty sends a small signal that the app
-was used, at most once a day. It helps us get a rough sense of how many
-installations are active and whether people keep coming back.
-
-The event includes a randomly generated installation ID, the app version, and
-a timestamp. The ID lets us recognize the same installation on another day;
-it isn't your name, email, or account. We don't send your beads, project names,
-file paths, or anything you type, and we don't record your sessions or clicks.
-Person profiles and location enrichment are disabled. PostHog still receives
-the network connection, so we don't promise “100% anonymity.”
-
-**You can turn it off at any time in Settings → Usage statistics → Share basic
-usage statistics.** That stops future events, and your choice stays saved across
-restarts. The app works just as well with reporting disabled.
-
-Feel free to disable it. But knowing that people are using the app helps my
-team and me decide where to focus our time, and encourages us to keep adding
-updates and making it better. I truly appreciate everyone who shares feedback,
-including through this small usage signal. Seeing that something we've built
-is useful to you is inspiring. Thank you for being part of it.
+Beadscope is a fork of
+[Bead Me Up, Scotty](https://github.com/brendan-appstart/bead-me-up-scotty), created
+by Brendan and released under the MIT license; the original copyright notice is kept
+in [LICENSE](LICENSE). It is a visual front end for
+[Beads](https://github.com/gastownhall/beads) by Steve Yegge, and shells out to the
+`bd` CLI it provides.
