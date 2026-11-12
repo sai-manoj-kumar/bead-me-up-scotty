@@ -12,7 +12,7 @@ try {
   const project = async name => { await page.goto(`${base}/p/demo`); await heading(name); };
   const toggle = page.getByRole('switch', { name: 'Use Focus as the default view' });
   await project('Board');
-  await page.evaluate(() => localStorage.setItem('bmus.view.demo', 'focus'));
+  await page.evaluate(() => localStorage.setItem('beadscope.view.demo', 'focus'));
   await project('Board'); // Old remembered-view storage is still ignored.
   await nav('Settings');
   assert.equal(await toggle.getAttribute('aria-checked'), 'false');

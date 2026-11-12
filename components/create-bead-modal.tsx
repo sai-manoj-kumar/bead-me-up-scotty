@@ -50,7 +50,7 @@ export function CreateBeadModal({
 }) {
   // ~50% wider than the old 540px default; drag the right edge to resize (persisted).
   const { width, startResize } = useResizableWidth({
-    storageKey: "bmus.width.create",
+    storageKey: "beadscope.width.create",
     defaultWidth: 810,
     min: 480,
     max: 1200,

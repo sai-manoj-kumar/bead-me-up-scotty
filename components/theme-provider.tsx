@@ -10,13 +10,12 @@ import {
 } from "@/lib/themes";
 
 /**
- * Per-project theme (bead-me-up-scotty-81k). The chosen theme is stored per-device
+ * Per-project theme (bead 81k). The chosen theme is stored per-device
  * in localStorage, keyed by the active project so different projects look different
  * and don't get confused. Project identity comes from the /p/<projectId> URL; the
  * launcher (no project) uses a shared key.
  */
-const LEGACY_KEY = "bmus-theme";
-const THEME_EVENT = "bmus:theme";
+const THEME_EVENT = "beadscope:theme";
 const DARK_QUERY = "(prefers-color-scheme: dark)";
 
 function subscribe(callback: () => void) {
@@ -49,7 +48,7 @@ function serverPrefersDark(): boolean {
 }
 
 function storageKey(projectId: string | null): string {
-  return projectId ? `bmus.theme.${projectId}` : "bmus.theme";
+  return projectId ? `beadscope.theme.${projectId}` : "beadscope.theme";
 }
 
 /**
@@ -79,14 +78,14 @@ function projectIdFromPath(pathname: string | null): string | null {
 
 /**
  * Reads the saved *choice* for a project (a palette id or "system"), falling back
- * to the legacy key, then the default. This is what the user picked, not what is
+ * to the default. This is what the user picked, not what is
  * painted — resolve it with resolveChoice() when the OS preference matters.
  */
 function readChoiceId(projectId: string | null): string {
   try {
     const store = getStore();
     const stored = store
-      ? (store.getItem(storageKey(projectId)) ?? store.getItem(LEGACY_KEY))
+      ? store.getItem(storageKey(projectId))
       : null;
     return getChoiceId(stored);
   } catch {

@@ -87,8 +87,8 @@ try {
 
   // Unknown persisted settings must not leak into the UI as an invalid select value.
   await page.addInitScript(() => {
-    if (localStorage.getItem("bmus.board") === null) {
-      localStorage.setItem("bmus.board", JSON.stringify({ sortMode: "obsolete" }));
+    if (localStorage.getItem("beadscope.board") === null) {
+      localStorage.setItem("beadscope.board", JSON.stringify({ sortMode: "obsolete" }));
     }
   });
   await page.goto(`${base}/p/demo`);

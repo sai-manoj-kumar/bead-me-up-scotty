@@ -9,14 +9,14 @@ import { fileURLToPath } from 'node:url';
 
 const configModule = fileURLToPath(new URL('../lib/config.ts', import.meta.url));
 const osUser = os.userInfo().username;
-const scratch = fs.mkdtempSync(path.join(os.tmpdir(), 'scotty-actor-'));
+const scratch = fs.mkdtempSync(path.join(os.tmpdir(), 'beadscope-actor-'));
 const gitRepo = path.join(scratch, 'repo');
 const noGit = path.join(scratch, 'plain');
 fs.mkdirSync(gitRepo);
 fs.mkdirSync(noGit);
 const isolatedGit = { GIT_CONFIG_GLOBAL: path.join(scratch, 'no-global'), GIT_CONFIG_NOSYSTEM: '1' };
 execFileSync('git', ['init', '-q'], { cwd: gitRepo, env: { ...process.env, ...isolatedGit } });
-execFileSync('git', ['config', 'user.name', 'Scotty Test Actor'], { cwd: gitRepo, env: { ...process.env, ...isolatedGit } });
+execFileSync('git', ['config', 'user.name', 'Beadscope Test Actor'], { cwd: gitRepo, env: { ...process.env, ...isolatedGit } });
 
 let n = 0;
 /** Run getConfig() (and optionally saveConfig) in a fresh process. */
@@ -38,15 +38,15 @@ function load({ cwd = gitRepo, env = {}, onDisk, save } = {}) {
 try {
   // Fresh install: follow bd's order.
   let c = load();
-  assert.equal(c.humanActor, 'Scotty Test Actor', 'git user.name comes before the OS user');
-  assert.deepEqual(c.humanAllowlist, ['Scotty Test Actor']);
+  assert.equal(c.humanActor, 'Beadscope Test Actor', 'git user.name comes before the OS user');
+  assert.deepEqual(c.humanAllowlist, ['Beadscope Test Actor']);
   assert.equal(load({ env: { BEADS_ACTOR: 'env-actor' } }).humanActor, 'env-actor', 'BEADS_ACTOR wins');
   assert.equal(load({ cwd: noGit }).humanActor, osUser, 'without a git name, the OS user');
 
   // Upgrade: the old computed default on disk is replaced, keeping the allowlist.
   c = load({ onDisk: { humanActor: osUser, humanAllowlist: [osUser, 'pal'], projects: [] } });
-  assert.equal(c.humanActor, 'Scotty Test Actor', 'stale OS-user default is replaced');
-  assert.deepEqual(c.humanAllowlist, [osUser, 'pal', 'Scotty Test Actor'], 'new actor joins the allowlist');
+  assert.equal(c.humanActor, 'Beadscope Test Actor', 'stale OS-user default is replaced');
+  assert.deepEqual(c.humanAllowlist, [osUser, 'pal', 'Beadscope Test Actor'], 'new actor joins the allowlist');
   c = load({ cwd: noGit, onDisk: { humanActor: osUser, humanAllowlist: [osUser], projects: [] } });
   assert.equal(c.humanActor, osUser, 'no git name: nothing changes');
   assert.deepEqual(c.humanAllowlist, [osUser]);

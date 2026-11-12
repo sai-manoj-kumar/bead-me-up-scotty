@@ -16,8 +16,8 @@ try { execFileSync('bd', ['--version'], { stdio: 'ignore' }); } catch {
 }
 
 const osUser = os.userInfo().username;
-const newActor = 'Scotty Close Test Actor';
-const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'scotty-close-'));
+const newActor = 'Beadscope Close Test Actor';
+const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'beadscope-close-'));
 const json = { 'Content-Type': 'application/json' };
 const before = await (await fetch(`${base}/api/config`)).json();
 let projectId;

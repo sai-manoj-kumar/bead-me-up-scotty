@@ -19,7 +19,7 @@ import type { InsightsData } from "@/lib/api-client";
 const HUMAN = "#3b82f6";
 const AGENT = "#8b5cf6";
 const RANGES = [7, 30, 90];
-const WIP_KEY = "bmus.wipLimits";
+const WIP_KEY = "beadscope.wipLimits";
 // Only columns where a work-in-progress limit is meaningful.
 const WIP_COLUMNS = ["ready", "in_progress", "blocked"];
 

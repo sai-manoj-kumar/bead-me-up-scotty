@@ -30,7 +30,7 @@ try {
  assert.equal(await toggle.getAttribute('aria-checked'),'false');
  await page.unroute('**/api/telemetry');
  await toggle.scrollIntoViewIfNeeded();
- await page.screenshot({path:'/tmp/scotty-usage-settings.png'});
+ await page.screenshot({path:'/tmp/beadscope-usage-settings.png'});
  assert.equal((await fetch(`${base}/api/telemetry`,{method:'PUT',headers:{origin:'https://foreign.example','content-type':'application/json'},body:'{"enabled":true}'})).status,403);
  assert.equal((await fetch(`${base}/api/telemetry`,{method:'PUT',headers:{origin:base,'content-type':'application/json'},body:'{"enabled":"true"}'})).status,400);
  assert.deepEqual(errors,[]);

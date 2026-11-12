@@ -201,7 +201,7 @@ function subscribeNever() {
 
 function useSidebarWidth() {
   const { width, startResize } = useResizableWidth({
-    storageKey: "bmus.width.sidebar",
+    storageKey: "beadscope.width.sidebar",
     defaultWidth: DEFAULT_WIDTH,
     min: 180,
     max: 400,

@@ -1,8 +1,8 @@
 "use client";
 import * as React from "react";
 
-const KEY = "bmus.default-focus";
-const EVENT = "bmus:default-view";
+const KEY = "beadscope.default-focus";
+const EVENT = "beadscope:default-view";
 function subscribe(callback: () => void) {
   window.addEventListener(EVENT, callback);
   window.addEventListener("storage", callback);

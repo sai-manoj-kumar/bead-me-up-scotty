@@ -140,7 +140,7 @@ export function BeadDetailDrawer({
   const bead = openId ? index.get(openId) : undefined;
   // ~50% wider than the old 480px default; drag the left edge to resize (persisted).
   const { width, startResize } = useResizableWidth({
-    storageKey: "bmus.width.drawer",
+    storageKey: "beadscope.width.drawer",
     defaultWidth: 720,
     min: 480,
     max: 1200,

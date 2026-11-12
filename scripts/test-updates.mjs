@@ -5,7 +5,7 @@ import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 // Real temporary Git repositories; only GitHub HTTP and the expensive build are substituted.
 import { createUpdater } from '../lib/update-service.ts';
-const root = fs.mkdtempSync(path.join(os.tmpdir(), 'scotty-update-'));
+const root = fs.mkdtempSync(path.join(os.tmpdir(), 'beadscope-update-'));
 const remote = path.join(root, 'remote'); const clone = path.join(root, 'clone');
 const git = (cwd, ...args) => execFileSync('git', args, { cwd, encoding: 'utf8', stdio: ['ignore','pipe','pipe'] }).trim();
 let latest = 'v0.2.0', offline = false, status = 200;
