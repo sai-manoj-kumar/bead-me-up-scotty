@@ -52,6 +52,7 @@ const bin = path.join(pkg, "bin", "beadscope.mjs");
 const baseEnv = { ...process.env, XDG_CONFIG_HOME: config };
 delete baseEnv.PORT;
 delete baseEnv.HOST;
+delete baseEnv.BEADSCOPE_ALLOWED_HOSTS; // keep the developer's shell export out of the tests
 
 /** Run the launcher to completion. Hangs (and times out) if `start` doesn't detach. */
 function beadscope(args, { env = {}, cwd = os.tmpdir(), timeout = 30000 } = {}) {
@@ -248,6 +249,31 @@ try {
     assert.ok(!fs.existsSync(stateFile), "run does not use the background state file");
   }
   step("run stays a foreground command");
+
+  // 14. Allowed hostnames are printed as extra URLs, and remembered for later commands.
+  {
+    const aliasUrl = `http://beadscope.local:${port}/`;
+    const env = { BEADSCOPE_ALLOWED_HOSTS: "Beadscope.local, *, not a host!" };
+    const r = beadscope(["start", "--no-open", "--port", String(port)], { env });
+    assert.equal(r.status, 0, r.stderr);
+    assert.match(r.stdout, new RegExp(`Also → ${aliasUrl.replace(/\./g, "\\.")}`));
+    assert.doesNotMatch(r.stdout, /not a host|\*/, "wildcards and junk are not printed as URLs");
+    assert.deepEqual(readState().allowedHosts, ["beadscope.local"]);
+
+    // A later shell without the variable still reports what the running server accepts.
+    const again = beadscope(["start", "--no-open"]);
+    assert.match(again.stdout, new RegExp(aliasUrl.replace(/\./g, "\\.")));
+    const status = beadscope(["status"]);
+    assert.match(status.stdout, new RegExp(`Also: ${aliasUrl.replace(/\./g, "\\.")}`));
+    beadscope(["stop"]);
+
+    // Without the variable nothing extra is printed.
+    const plain = beadscope(["start", "--no-open", "--port", String(port)]);
+    assert.doesNotMatch(plain.stdout, /Also/);
+    assert.deepEqual(readState().allowedHosts, []);
+    beadscope(["stop"]);
+  }
+  step("allowed hostnames are printed on start/status and remembered across shells");
 
   console.log(`PASS: ${steps.length} groups\n  - ${steps.join("\n  - ")}`);
 } finally {
