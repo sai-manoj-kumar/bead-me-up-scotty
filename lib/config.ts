@@ -90,40 +90,9 @@ export function lanePrefix(): string | null {
   return process.env.BEADSCOPE_LANE_PREFIX || null;
 }
 
-/** Directory name used before the project was renamed to beadscope. */
-const LEGACY_DIR_NAME = "bead-me-up-scotty";
-/** Transient files of a running background server; never worth carrying over. */
-const LEGACY_SKIP = new Set(["server.json", "server.log"]);
-const migratedBases = new Set<string>();
-
-/**
- * One-time, best-effort COPY of per-user state (config.json with the project
- * registry, telemetry id/history, ...) from the pre-rename directory. The old
- * directory is left untouched, and a file already present in the new one is
- * never overwritten, so this is safe to repeat and to race.
- */
-function migrateLegacyState(base: string, dest: string): void {
-  if (migratedBases.has(base)) return;
-  migratedBases.add(base);
-  const legacy = path.join(base, LEGACY_DIR_NAME);
-  try {
-    if (!fs.existsSync(legacy)) return;
-    fs.mkdirSync(dest, { recursive: true, mode: 0o700 });
-    for (const name of fs.readdirSync(legacy)) {
-      const to = path.join(dest, name);
-      if (LEGACY_SKIP.has(name) || fs.existsSync(to)) continue;
-      fs.cpSync(path.join(legacy, name), to, { recursive: true });
-    }
-  } catch {
-    /* a failed migration must never stop the app from starting */
-  }
-}
-
 export function configDir(): string {
   const base = process.env.XDG_CONFIG_HOME || path.join(os.homedir(), ".config");
-  const dir = path.join(base, "beadscope");
-  migrateLegacyState(base, dir);
-  return dir;
+  return path.join(base, "beadscope");
 }
 function configFile(): string {
   return path.join(configDir(), "config.json");

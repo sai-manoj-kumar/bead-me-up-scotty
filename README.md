@@ -127,9 +127,8 @@ detail links, and read-only protections also work in the grouped layout.
   the app adds **zero** new persisted schema. The only adapter is
   [`lib/bd.ts`](lib/bd.ts); see the spec in [`design/design.md`](design/design.md).
 - The UI began as a **Claude Design** export (from the original project) and is
-  rebuilt faithfully here with Next.js + shadcn/Tailwind. The original export and
-  a screen/token map live in [`design/ui-export/`](design/ui-export/); those files
-  still use the original project's name.
+  rebuilt faithfully here with Next.js + shadcn/Tailwind. The extracted export and
+  a screen/token map live in [`design/ui-export/`](design/ui-export/).
 
 ### Backlog & attribution (design decisions)
 - **Backlog** maps to beads' built-in `deferred` status; **Ready** = open &
@@ -161,8 +160,7 @@ need a manual restart. Local changes or diverged history must be resolved first.
 Global copies, source downloads, and Docker installations receive the notice with
 manual update instructions. No update is installed automatically.
 
-Release notes for the versions published by the original project are kept in
-[`docs/releases/`](docs/releases/).
+Release notes and the versioning policy are in [`docs/releases/`](docs/releases/).
 
 ## Run it
 
@@ -316,13 +314,9 @@ The background server's PID and log are kept in
 `${XDG_CONFIG_HOME:-~/.config}/beadscope/` (`server.json`, `server.log`).
 The log is reset on every `start`.
 
-> **Coming from Bead Me Up, Scotty?** The command is now `beadscope` (there is no
-> `scotty` alias), and the environment variables are `BEADSCOPE_*` instead of
-> `SCOTTY_*`. On first start your settings (project list, actor, telemetry id) are
-> **copied** from `~/.config/bead-me-up-scotty/` to `~/.config/beadscope/`; the old
-> folder is left untouched. A bare `beadscope` prints usage; use `beadscope start`
-> (background) or `beadscope run` (foreground). Environment variables are read when
-> the server starts, so run `beadscope stop` then `beadscope start` to apply a change.
+> A bare `beadscope` prints usage; use `beadscope start` (background) or
+> `beadscope run` (foreground). Environment variables are read when the server
+> starts, so run `beadscope stop` then `beadscope start` to apply a change.
 
 **Recommended — `npm link` (keep the clone):**
 
