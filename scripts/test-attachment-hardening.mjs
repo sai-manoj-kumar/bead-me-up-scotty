@@ -13,8 +13,8 @@ assert.equal(api.attachments.urlFor('p', 'attachment://../../config'), '/api/p/p
 assert.equal(api.attachments.urlFor('p', 'attachment://bd-1/./../x.png'), '/api/p/p/attachments/bd-1/x.png');
 assert.equal(api.attachments.urlFor('p', 'attachment://bd-1/%2e%2e/x.png'), '/api/p/p/attachments/bd-1/%252e%252e/x.png');
 
-const base = process.env.SCOTTY_TEST_URL;
-assert.ok(base, 'Set SCOTTY_TEST_URL to an isolated app server');
+const base = process.env.BEADSCOPE_TEST_URL;
+assert.ok(base, 'Set BEADSCOPE_TEST_URL to an isolated app server');
 
 const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'scotty-attach-'));
 try {

@@ -7,9 +7,9 @@ export interface Meta {
   humanAllowlist: string[];
   pollIntervalMs: number;
   gamification?: boolean;
-  /** Viewer mode (SCOTTY_READ_ONLY): the server refuses writes; the UI hides them. */
+  /** Viewer mode (BEADSCOPE_READ_ONLY): the server refuses writes; the UI hides them. */
   readOnly?: boolean;
-  /** Label prefix (SCOTTY_LANE_PREFIX) that partitions work into Focus-view lane chips. */
+  /** Label prefix (BEADSCOPE_LANE_PREFIX) that partitions work into Focus-view lane chips. */
   lanePrefix?: string | null;
 }
 export interface BeadsResponse {
@@ -116,7 +116,7 @@ export interface FsResponse {
 export type { UpdateStatus, UpdateStep, UpdateResult } from "./update-types";
 
 /**
- * An error from the scotty API that preserves the server's machine-stable
+ * An error from the beadscope API that preserves the server's machine-stable
  * `code` and any raw `detail`. The plain `Error` thrown before this dropped
  * both, so the UI had nothing to key off but the message string.
  */

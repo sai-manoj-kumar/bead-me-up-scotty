@@ -18,7 +18,7 @@ export function reviewLinks(bead: Bead): string[] {
       continue;
     }
     try {
-      const url = new URL(link, "https://scotty.invalid");
+      const url = new URL(link, "https://beadscope.invalid");
       if (link.startsWith("/")) {
         if (/^\/api\/p\/[^/]+\/attachments\/[^/]+\/[^/]+$/.test(url.pathname)) links.add(link);
       } else if (["http:", "https:"].includes(url.protocol) && url.hostname) links.add(link);

@@ -12,7 +12,7 @@
  */
 type Closer = () => void;
 
-const KEY = Symbol.for("scotty.sse.openStreams");
+const KEY = Symbol.for("beadscope.sse.openStreams");
 
 function registry(): Set<Closer> {
   const g = globalThis as unknown as Record<symbol, Set<Closer> | undefined>;

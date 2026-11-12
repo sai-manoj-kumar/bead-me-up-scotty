@@ -1,9 +1,9 @@
-// Tests for the `scotty start | stop | status | logs | run` launcher.
+// Tests for the `beadscope start | stop | status | logs | run` launcher.
 //
-// Needs no build and no node_modules: it copies bin/bead-me-up-scotty.mjs into a
+// Needs no build and no node_modules: it copies bin/beadscope.mjs into a
 // throwaway package root next to a tiny stand-in for `next`, and points the
 // launcher's state dir at a temp XDG_CONFIG_HOME, so it never touches a real
-// Scotty install or a real server on port 3000.
+// Beadscope install or a real server on port 3000.
 //
 //   node scripts/test-daemon.mjs
 import assert from "node:assert/strict";
@@ -15,21 +15,21 @@ import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
 const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "scotty-daemon-test-"));
+const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "beadscope-daemon-test-"));
 const pkg = path.join(tmp, "pkg");
 const config = path.join(tmp, "config");
-const stateFile = path.join(config, "bead-me-up-scotty", "server.json");
+const stateFile = path.join(config, "beadscope", "server.json");
 
 // --- fixture: package root + fake `next` -----------------------------------
 fs.mkdirSync(path.join(pkg, "bin"), { recursive: true });
 fs.mkdirSync(path.join(pkg, ".next"), { recursive: true });
 fs.mkdirSync(path.join(pkg, "node_modules", "next", "dist", "bin"), { recursive: true });
 fs.copyFileSync(
-  path.join(repo, "bin", "bead-me-up-scotty.mjs"),
-  path.join(pkg, "bin", "bead-me-up-scotty.mjs"),
+  path.join(repo, "bin", "beadscope.mjs"),
+  path.join(pkg, "bin", "beadscope.mjs"),
 );
 fs.writeFileSync(path.join(pkg, ".next", "BUILD_ID"), "test");
-fs.writeFileSync(path.join(pkg, "package.json"), JSON.stringify({ name: "fake-scotty" }));
+fs.writeFileSync(path.join(pkg, "package.json"), JSON.stringify({ name: "fake-beadscope" }));
 fs.writeFileSync(
   path.join(pkg, "node_modules", "next", "package.json"),
   JSON.stringify({ name: "next", version: "0.0.0" }),
@@ -48,20 +48,20 @@ setInterval(() => {}, 1 << 30);
 `,
 );
 
-const bin = path.join(pkg, "bin", "bead-me-up-scotty.mjs");
+const bin = path.join(pkg, "bin", "beadscope.mjs");
 const baseEnv = { ...process.env, XDG_CONFIG_HOME: config };
 delete baseEnv.PORT;
 delete baseEnv.HOST;
 
 /** Run the launcher to completion. Hangs (and times out) if `start` doesn't detach. */
-function scotty(args, { env = {}, cwd = os.tmpdir(), timeout = 30000 } = {}) {
+function beadscope(args, { env = {}, cwd = os.tmpdir(), timeout = 30000 } = {}) {
   const r = spawnSync(process.execPath, [bin, ...args], {
     cwd,
     env: { ...baseEnv, ...env },
     encoding: "utf8",
     timeout,
   });
-  assert.equal(r.error, undefined, `scotty ${args.join(" ")} failed to run: ${r.error}`);
+  assert.equal(r.error, undefined, `beadscope ${args.join(" ")} failed to run: ${r.error}`);
   return r;
 }
 
@@ -98,19 +98,19 @@ try {
   const port = await freePort();
   const url = `http://localhost:${port}/`;
 
-  // 1. Bare `scotty` and --help show usage and exit 0 without starting anything.
+  // 1. Bare `beadscope` and --help show usage and exit 0 without starting anything.
   for (const args of [[], ["--help"], ["start", "--help"]]) {
-    const r = scotty(args);
-    assert.equal(r.status, 0, `scotty ${args.join(" ")} exits 0`);
+    const r = beadscope(args);
+    assert.equal(r.status, 0, `beadscope ${args.join(" ")} exits 0`);
     assert.match(r.stdout, /Commands:/);
-    assert.match(r.stdout, /scotty <command>/);
+    assert.match(r.stdout, /beadscope <command>/);
   }
   assert.ok(!fs.existsSync(stateFile), "usage must not start a server");
-  step("bare scotty / --help print usage and exit 0, starting nothing");
+  step("bare beadscope / --help print usage and exit 0, starting nothing");
 
   // 2. Unknown subcommand: error + usage, non-zero.
   {
-    const r = scotty(["bogus"]);
+    const r = beadscope(["bogus"]);
     assert.equal(r.status, 1);
     assert.match(r.stderr, /Unknown command: "bogus"/);
     assert.match(r.stderr, /Commands:/);
@@ -118,21 +118,21 @@ try {
   step("unknown subcommand exits 1 with usage");
 
   // 3. Nothing running: status exits 1, stop is a harmless no-op, logs explains.
-  assert.equal(scotty(["status"]).status, 1);
+  assert.equal(beadscope(["status"]).status, 1);
   {
-    const r = scotty(["stop"]);
+    const r = beadscope(["stop"]);
     assert.equal(r.status, 0);
     assert.match(r.stdout, /not running/);
   }
-  assert.equal(scotty(["logs"]).status, 1);
+  assert.equal(beadscope(["logs"]).status, 1);
   step("status/stop/logs with nothing running");
 
   // 4. start: returns promptly (detached), server answers, state recorded.
   const t0 = Date.now();
-  const started = scotty(["start", "--no-open", "--port", String(port)]);
+  const started = beadscope(["start", "--no-open", "--port", String(port)]);
   assert.equal(started.status, 0, started.stderr);
   assert.match(started.stdout, new RegExp(`http://localhost:${port}/`));
-  assert.match(started.stdout, /scotty stop/);
+  assert.match(started.stdout, /beadscope stop/);
   assert.ok(Date.now() - t0 < 15000, "start returns once the server is ready");
   assert.equal(await get(url), "ok");
   const state = readState();
@@ -147,7 +147,7 @@ try {
 
   // 5. status (from another cwd) reports it.
   {
-    const r = scotty(["status"], { cwd: pkg });
+    const r = beadscope(["status"], { cwd: pkg });
     assert.equal(r.status, 0);
     assert.match(r.stdout, /running/);
     assert.match(r.stdout, new RegExp(`PID:\\s+${state.pid}`));
@@ -157,11 +157,11 @@ try {
 
   // 6. A second start doesn't launch another server.
   {
-    const r = scotty(["start", "--no-open"]);
+    const r = beadscope(["start", "--no-open"]);
     assert.equal(r.status, 0);
     assert.match(r.stdout, /already running/);
     assert.equal(readState().pid, state.pid, "same server, not a second one");
-    const other = scotty(["start", "--no-open", "--port", String(port + 1)]);
+    const other = beadscope(["start", "--no-open", "--port", String(port + 1)]);
     assert.match(other.stdout, /ignoring --port/);
     assert.equal(readState().pid, state.pid);
   }
@@ -169,24 +169,24 @@ try {
 
   // 7. logs shows what the server printed.
   {
-    const r = scotty(["logs"]);
+    const r = beadscope(["logs"]);
     assert.equal(r.status, 0);
     assert.match(r.stdout, /fake-next listening/);
-    assert.equal(scotty(["logs", "-n", "1"]).status, 0);
-    assert.notEqual(scotty(["logs", "-n", "0"]).status, 0, "-n must be positive");
+    assert.equal(beadscope(["logs", "-n", "1"]).status, 0);
+    assert.notEqual(beadscope(["logs", "-n", "0"]).status, 0, "-n must be positive");
   }
   step("logs prints the server output");
 
   // 8. stop (from another cwd) kills it and cleans up.
   {
-    const r = scotty(["stop"], { cwd: pkg });
+    const r = beadscope(["stop"], { cwd: pkg });
     assert.equal(r.status, 0, r.stderr);
     assert.match(r.stdout, /Stopped/);
     assert.ok(!alive(state.pid), "process is gone");
     assert.ok(await refused(url), "port is closed");
     assert.ok(!fs.existsSync(stateFile), "state file removed");
-    assert.match(scotty(["stop"]).stdout, /not running/);
-    assert.equal(scotty(["status"]).status, 1);
+    assert.match(beadscope(["stop"]).stdout, /not running/);
+    assert.equal(beadscope(["status"]).status, 1);
   }
   step("stop kills the server, closes the port, removes state; second stop is a no-op");
 
@@ -195,10 +195,10 @@ try {
     stateFile,
     JSON.stringify({ pid: 2 ** 22 + 12345, port, host: "localhost", startedAt: Date.now() - 3600e3 }),
   );
-  assert.equal(scotty(["status"]).status, 1);
+  assert.equal(beadscope(["status"]).status, 1);
   assert.ok(!fs.existsSync(stateFile), "stale state removed");
   fs.writeFileSync(stateFile, "{not json");
-  assert.match(scotty(["stop"]).stdout, /not running/);
+  assert.match(beadscope(["stop"]).stdout, /not running/);
   assert.ok(!fs.existsSync(stateFile), "corrupt state removed");
   step("stale and corrupt state files are cleaned up");
 
@@ -208,18 +208,18 @@ try {
     stateFile,
     JSON.stringify({ pid: process.pid, port, host: "localhost", startedAt: Date.now() - 3600e3 }),
   );
-  assert.match(scotty(["stop"]).stdout, /not running/);
+  assert.match(beadscope(["stop"]).stdout, /not running/);
   assert.ok(alive(process.pid), "unrelated process was left alone");
   assert.ok(!fs.existsSync(stateFile));
   step("a recycled pid is never signalled");
 
   // 11. A server that ignores SIGTERM is escalated to SIGKILL.
   {
-    const r = scotty(["start", "--no-open", "--port", String(port)], { env: { FAKE_NEXT_STUBBORN: "1" } });
+    const r = beadscope(["start", "--no-open", "--port", String(port)], { env: { FAKE_NEXT_STUBBORN: "1" } });
     assert.equal(r.status, 0, r.stderr);
     const { pid } = readState();
     const t = Date.now();
-    const s = scotty(["stop"]);
+    const s = beadscope(["stop"]);
     assert.equal(s.status, 0, s.stderr);
     assert.ok(!alive(pid), "stubborn server was killed");
     assert.ok(Date.now() - t >= 3500, "waited out the SIGTERM grace period first");
@@ -229,7 +229,7 @@ try {
 
   // 12. A server that dies on boot: start fails loudly, shows the log, leaves no state.
   {
-    const r = scotty(["start", "--no-open", "--port", String(port)], { env: { FAKE_NEXT_EXIT: "1" } });
+    const r = beadscope(["start", "--no-open", "--port", String(port)], { env: { FAKE_NEXT_EXIT: "1" } });
     assert.equal(r.status, 1);
     assert.match(r.stderr, /failed to start/);
     assert.match(r.stderr, /fake-next: boom/);
@@ -252,7 +252,7 @@ try {
   console.log(`PASS: ${steps.length} groups\n  - ${steps.join("\n  - ")}`);
 } finally {
   try {
-    scotty(["stop"]);
+    beadscope(["stop"]);
   } catch {
     /* best effort */
   }

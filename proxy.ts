@@ -9,7 +9,7 @@ import { checkRequest } from "@/lib/request-guard";
  *    Origin is another site, and any request addressed by a hostname that DNS
  *    rebinding could forge. See lib/request-guard.ts.
  *
- * 2. Viewer mode (SCOTTY_READ_ONLY=1): refuse every project-data mutation.
+ * 2. Viewer mode (BEADSCOPE_READ_ONLY=1): refuse every project-data mutation.
  *    Anything non-GET under /api/p/ writes bead data, attachments, ordering, or
  *    publishes — all of it is off-limits when the beads store is owned by an
  *    external writer (the bd CLI). App-level endpoints (/api/config,
@@ -23,7 +23,7 @@ import { checkRequest } from "@/lib/request-guard";
  * pins the runtime — `proxy` is always Node and cannot be configured to Edge,
  * which is what lets this read `process.env` at request time. That matters
  * here: the global install ships a pre-built `.next`, so the flags are only ever
- * set at launch, and an Edge-runtime guard with SCOTTY_READ_ONLY inlined at
+ * set at launch, and an Edge-runtime guard with BEADSCOPE_READ_ONLY inlined at
  * build time would have failed open while the UI still claimed read-only.
  */
 // Refusals are logged once per reason and address, so someone whose setup
@@ -37,13 +37,13 @@ export function proxy(req: NextRequest) {
     host: req.headers.get("host"),
     origin: req.headers.get("origin"),
     secFetchSite: req.headers.get("sec-fetch-site"),
-    allowedHosts: process.env.SCOTTY_ALLOWED_HOSTS,
+    allowedHosts: process.env.BEADSCOPE_ALLOWED_HOSTS,
   });
   if (!verdict.ok) {
     const key = `${verdict.code}:${verdict.error}`;
     if (!reported.has(key)) {
       reported.add(key);
-      console.warn(`[scotty] ${req.method} ${req.nextUrl.pathname} refused: ${verdict.error}`);
+      console.warn(`[beadscope] ${req.method} ${req.nextUrl.pathname} refused: ${verdict.error}`);
     }
     if (req.nextUrl.pathname.startsWith("/api/")) {
       return NextResponse.json({ error: verdict.error, code: verdict.code }, { status: 403 });

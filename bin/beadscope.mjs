@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 /**
- * Global launcher for Bead Me Up, Scotty.
+ * Global launcher for Beadscope.
  *
- * Installed as `scotty` / `bead-me-up-scotty`.
+ * Installed as `beadscope`.
  *
- *   scotty start    start the Next.js production server in the background
- *   scotty stop     stop it again, from any terminal
- *   scotty status   show whether it is running, and where
- *   scotty logs     show (or follow) the server output
- *   scotty run      run the server in the foreground (Ctrl+C to stop)
+ *   beadscope start    start the Next.js production server in the background
+ *   beadscope stop     stop it again, from any terminal
+ *   beadscope status   show whether it is running, and where
+ *   beadscope logs     show (or follow) the server output
+ *   beadscope run      run the server in the foreground (Ctrl+C to stop)
  *
  * The server is this package's own prebuilt .next, on a free port. Once it is
  * ready we open the browser; if the command was run from a directory that
@@ -49,16 +49,15 @@ const COMMANDS = ["start", "stop", "status", "logs", "run"];
 
 function printHelp(stream = process.stdout) {
   stream.write(`
-Bead Me Up, Scotty — local web UI for the beads (bd) tracker.
+Beadscope — local web UI for the beads (bd) tracker.
 
 Usage:
-  scotty <command> [options]
-  bead-me-up-scotty <command> [options]
+  beadscope <command> [options]
 
 Commands:
   start     Start the server in the background and open your browser.
             Run it from a folder that has a .beads repo to jump straight to
-            that project; otherwise you get the picker. If Scotty is already
+            that project; otherwise you get the picker. If Beadscope is already
             running it just opens the browser again.
   stop      Stop the background server (works from any terminal).
   status    Show whether the server is running, with its URL and PID.
@@ -77,7 +76,7 @@ Options (start, run):
   -h, --help       Show this help.
 
 The background server's PID and log live in
-\${XDG_CONFIG_HOME:-~/.config}/bead-me-up-scotty/.
+\${XDG_CONFIG_HOME:-~/.config}/beadscope/.
 `);
 }
 
@@ -303,7 +302,7 @@ async function showAndOpen(host, port, open) {
 /** Same per-user dir the usage-statistics settings use. */
 function stateDir() {
   const base = process.env.XDG_CONFIG_HOME || path.join(os.homedir(), ".config");
-  return path.join(base, "bead-me-up-scotty");
+  return path.join(base, "beadscope");
 }
 const stateFile = () => path.join(stateDir(), "server.json");
 const logFile = () => path.join(stateDir(), "server.log");
@@ -420,9 +419,9 @@ const serverUrl = (s) => `http://${s.host}:${s.port}/`;
 async function cmdStart(opts) {
   const running = await getRunning();
   if (running) {
-    console.log(`\n  Scotty is already running → ${serverUrl(running)}  (pid ${running.pid})`);
+    console.log(`\n  Beadscope is already running → ${serverUrl(running)}  (pid ${running.pid})`);
     if (opts.portExplicit && opts.port !== running.port) {
-      console.log(`  (ignoring --port ${opts.port}; \`scotty stop\` first to move it)`);
+      console.log(`  (ignoring --port ${opts.port}; \`beadscope stop\` first to move it)`);
     }
     const { fullUrl, open } = await showAndOpen(running.host, running.port, opts.open);
     console.log(`  ${fullUrl}\n`);
@@ -459,10 +458,10 @@ async function cmdStart(opts) {
 
   const state = { pid: child.pid, port, host, startedAt: Date.now() };
   if (!writeStateExclusive(state)) {
-    // Another `scotty start` won the race between our check and now.
+    // Another `beadscope start` won the race between our check and now.
     signalServer(child.pid, "SIGKILL");
     const winner = await getRunning();
-    console.log(`\n  Scotty is already running${winner ? ` → ${serverUrl(winner)}` : ""}\n`);
+    console.log(`\n  Beadscope is already running${winner ? ` → ${serverUrl(winner)}` : ""}\n`);
     return;
   }
   child.unref();
@@ -483,8 +482,8 @@ async function cmdStart(opts) {
 
   const { fullUrl, open } = await showAndOpen(host, port, opts.open);
   console.log(
-    `\n  Bead Me Up, Scotty → ${fullUrl}\n` +
-      `  Running in the background (pid ${child.pid}). Stop it with: scotty stop\n`,
+    `\n  Beadscope → ${fullUrl}\n` +
+      `  Running in the background (pid ${child.pid}). Stop it with: beadscope stop\n`,
   );
   open();
 }
@@ -492,37 +491,37 @@ async function cmdStart(opts) {
 async function cmdStop() {
   const state = await getRunning();
   if (!state) {
-    console.log("Scotty is not running.");
+    console.log("Beadscope is not running.");
     return;
   }
   try {
     signalServer(state.pid, "SIGTERM");
     // `next start` drains in-flight requests on SIGTERM, and our SSE change
     // stream never completes on its own — so give it a short deadline, then
-    // SIGKILL, exactly like Ctrl+C does for `scotty run`.
+    // SIGKILL, exactly like Ctrl+C does for `beadscope run`.
     if (!(await waitForExit(state.pid, STOP_GRACE_MS))) {
       signalServer(state.pid, "SIGKILL");
       if (!(await waitForExit(state.pid, 2000))) {
-        console.error(`Could not stop Scotty (pid ${state.pid}).`);
+        console.error(`Could not stop Beadscope (pid ${state.pid}).`);
         process.exit(1);
       }
     }
   } catch (e) {
-    console.error(`Could not stop Scotty (pid ${state.pid}): ${e.message}`);
+    console.error(`Could not stop Beadscope (pid ${state.pid}): ${e.message}`);
     process.exit(1);
   }
   removeState();
-  console.log(`Stopped Scotty (pid ${state.pid}).`);
+  console.log(`Stopped Beadscope (pid ${state.pid}).`);
 }
 
 async function cmdStatus() {
   const state = await getRunning();
   if (!state) {
-    console.log("Scotty is not running.");
+    console.log("Beadscope is not running.");
     process.exit(1);
   }
   console.log(
-    `Scotty is running\n` +
+    `Beadscope is running\n` +
       `  URL:  ${serverUrl(state)}\n` +
       `  PID:  ${state.pid}\n` +
       `  Up:   ${formatUptime(Date.now() - state.startedAt)}\n` +
@@ -553,7 +552,7 @@ function tailFile(file, n) {
 async function cmdLogs(opts) {
   const file = logFile();
   if (!fs.existsSync(file)) {
-    console.error("No server log yet. Start Scotty with: scotty start");
+    console.error("No server log yet. Start Beadscope with: beadscope start");
     process.exit(1);
   }
   const text = tailFile(file, opts.lines);
@@ -648,15 +647,15 @@ async function cmdRun(opts) {
   }
 
   const { fullUrl, open } = await showAndOpen(host, port, opts.open);
-  console.log(`\n  Bead Me Up, Scotty → ${fullUrl}\n  (Ctrl+C to stop)\n`);
+  console.log(`\n  Beadscope → ${fullUrl}\n  (Ctrl+C to stop)\n`);
   open();
 }
 
 async function main() {
   const opts = parseArgs(process.argv.slice(2));
 
-  // No subcommand (or --help): show usage. A bare `scotty` deliberately does
-  // not start a server any more — `scotty start` does.
+  // No subcommand (or --help): show usage. A bare `beadscope` deliberately does
+  // not start a server any more — `beadscope start` does.
   if (opts.help || opts.command === undefined) {
     printHelp();
     process.exit(0);

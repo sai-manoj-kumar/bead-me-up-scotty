@@ -1,10 +1,10 @@
 import assert from "node:assert/strict";
 import { chromium } from "playwright";
 
-const base = process.env.SCOTTY_TEST_URL;
-assert.ok(base, "SCOTTY_TEST_URL is required; use an isolated upstream fixture server");
+const base = process.env.BEADSCOPE_TEST_URL;
+assert.ok(base, "BEADSCOPE_TEST_URL is required; use an isolated upstream fixture server");
 const browser = await chromium.launch({
-  executablePath: process.env.SCOTTY_BROWSER_EXECUTABLE || undefined,
+  executablePath: process.env.BEADSCOPE_BROWSER_EXECUTABLE || undefined,
 });
 const errors = [];
 

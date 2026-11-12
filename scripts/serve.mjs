@@ -3,7 +3,7 @@
  * Supervised production server (bead bgb). Runs `next start` and relaunches it
  * when the app requests a self-update restart (child exits with code 75). This is
  * what makes the one-click "Update now" button able to bring the server back on
- * the new build. Sets BMUS_SUPERVISED=1 so the app knows auto-restart is possible.
+ * the new build. Sets BEADSCOPE_SUPERVISED=1 so the app knows auto-restart is possible.
  *
  *   npm run build && npm run serve
  *
@@ -30,8 +30,8 @@ function nextBin() {
 
 const port = process.env.PORT || "3000";
 const host = process.env.HOST || "localhost";
-// Test hook: override the spawned command with a JSON array (BMUS_SERVE_CMD).
-const override = process.env.BMUS_SERVE_CMD ? JSON.parse(process.env.BMUS_SERVE_CMD) : null;
+// Test hook: override the spawned command with a JSON array (BEADSCOPE_SERVE_CMD).
+const override = process.env.BEADSCOPE_SERVE_CMD ? JSON.parse(process.env.BEADSCOPE_SERVE_CMD) : null;
 
 let child = null;
 let stopping = false;
@@ -46,7 +46,7 @@ function start() {
       : ["next", "start", "-p", port, "-H", host]; // bin unresolved → use PATH via npx
   child = spawn(cmd, args, {
     stdio: "inherit",
-    env: { ...process.env, BMUS_SUPERVISED: "1", PORT: port, HOST: host },
+    env: { ...process.env, BEADSCOPE_SUPERVISED: "1", PORT: port, HOST: host },
   });
   child.on("exit", (code, signal) => {
     if (stopping) return;

@@ -62,12 +62,12 @@ export class ConfigError extends Error {
 }
 
 /**
- * SCOTTY_READ_ONLY=1 (or "true") supplies the default for new browser sessions.
+ * BEADSCOPE_READ_ONLY=1 (or "true") supplies the default for new browser sessions.
  * The session cookie overrides that default when the user changes the mode.
  * In the effective read-only mode, project writes are refused server-side and
  * editing controls are disabled. App settings remain available.
  */
-export const VIEWER_MODE_COOKIE = "scotty-viewer-mode";
+export const VIEWER_MODE_COOKIE = "beadscope-viewer-mode";
 
 export function isReadOnly(request?: Request): boolean {
   // This is a browser preference, not an authorization boundary. A session
@@ -76,23 +76,54 @@ export function isReadOnly(request?: Request): boolean {
     .find((v) => v.startsWith(`${VIEWER_MODE_COOKIE}=`))?.slice(VIEWER_MODE_COOKIE.length + 1);
   if (cookie === "read-only") return true;
   if (cookie === "editing") return false;
-  const v = process.env.SCOTTY_READ_ONLY;
+  const v = process.env.BEADSCOPE_READ_ONLY;
   return v === "1" || v === "true";
 }
 
 /**
- * Focus-view lane chips: SCOTTY_LANE_PREFIX names a label prefix (e.g. "ctx:")
+ * Focus-view lane chips: BEADSCOPE_LANE_PREFIX names a label prefix (e.g. "ctx:")
  * whose values partition work into lanes/teams/areas. When set, the Focus view
  * offers one filter chip per lane label found on the visible beads. Unset →
  * no chips (the feature is invisible).
  */
 export function lanePrefix(): string | null {
-  return process.env.SCOTTY_LANE_PREFIX || null;
+  return process.env.BEADSCOPE_LANE_PREFIX || null;
 }
 
-function configDir(): string {
+/** Directory name used before the project was renamed to beadscope. */
+const LEGACY_DIR_NAME = "bead-me-up-scotty";
+/** Transient files of a running background server; never worth carrying over. */
+const LEGACY_SKIP = new Set(["server.json", "server.log"]);
+const migratedBases = new Set<string>();
+
+/**
+ * One-time, best-effort COPY of per-user state (config.json with the project
+ * registry, telemetry id/history, ...) from the pre-rename directory. The old
+ * directory is left untouched, and a file already present in the new one is
+ * never overwritten, so this is safe to repeat and to race.
+ */
+function migrateLegacyState(base: string, dest: string): void {
+  if (migratedBases.has(base)) return;
+  migratedBases.add(base);
+  const legacy = path.join(base, LEGACY_DIR_NAME);
+  try {
+    if (!fs.existsSync(legacy)) return;
+    fs.mkdirSync(dest, { recursive: true, mode: 0o700 });
+    for (const name of fs.readdirSync(legacy)) {
+      const to = path.join(dest, name);
+      if (LEGACY_SKIP.has(name) || fs.existsSync(to)) continue;
+      fs.cpSync(path.join(legacy, name), to, { recursive: true });
+    }
+  } catch {
+    /* a failed migration must never stop the app from starting */
+  }
+}
+
+export function configDir(): string {
   const base = process.env.XDG_CONFIG_HOME || path.join(os.homedir(), ".config");
-  return path.join(base, "bead-me-up-scotty");
+  const dir = path.join(base, "beadscope");
+  migrateLegacyState(base, dir);
+  return dir;
 }
 function configFile(): string {
   return path.join(configDir(), "config.json");

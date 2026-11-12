@@ -1,8 +1,8 @@
 // Keyboard integration regression; project data and writes are intercepted.
 import assert from 'node:assert/strict';
 import { chromium } from 'playwright';
-const base = process.env.SCOTTY_TEST_URL;
-assert.ok(base, 'Set SCOTTY_TEST_URL to an isolated demo server');
+const base = process.env.BEADSCOPE_TEST_URL;
+assert.ok(base, 'Set BEADSCOPE_TEST_URL to an isolated demo server');
 const bead = (id, extra = {}) => ({id, title: `Keyboard ${id}`, status:'open', issue_type:'task', priority:2, labels:[], dependencies:[], created_at:'2026-09-01T00:00:00Z', updated_at:'2026-09-01T00:00:00Z', ...extra});
 const beads = [bead('ready-a',{dependencies:[{type:'related',depends_on_id:'ready-a'}]}), bead('ready-b'), bead('active', {status:'in_progress'}), bead('hidden', {labels:['archived']}), bead('epic', {issue_type:'epic'}), bead('epic-child',{dependencies:[{type:'parent-child',depends_on_id:'epic'}]})];
 const writes=[];

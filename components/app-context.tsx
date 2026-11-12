@@ -14,7 +14,7 @@ interface AppContextValue {
   index: Map<string, Bead>;
   meta?: Meta;
   humanAllowlist: string[];
-  /** Viewer mode (SCOTTY_READ_ONLY): hide write affordances; the server refuses writes anyway. */
+  /** Viewer mode (BEADSCOPE_READ_ONLY): hide write affordances; the server refuses writes anyway. */
   readOnly: boolean;
   loading: boolean;
   error?: string;

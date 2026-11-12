@@ -2,8 +2,8 @@
 import assert from "node:assert/strict";
 import { chromium } from "playwright";
 
-const base = process.env.SCOTTY_TEST_URL;
-assert.ok(base, "Set SCOTTY_TEST_URL to an isolated app server");
+const base = process.env.BEADSCOPE_TEST_URL;
+assert.ok(base, "Set BEADSCOPE_TEST_URL to an isolated app server");
 const bead = (id, title = id, extra = {}) => ({
   id, title, status: "open", issue_type: "task", priority: 2, labels: [], dependencies: [],
   created_at: "2026-09-01T00:00:00Z", updated_at: "2026-09-01T00:00:00Z", ...extra,

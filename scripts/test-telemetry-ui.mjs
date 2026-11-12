@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { chromium } from 'playwright';
-const base = process.env.SCOTTY_TEST_URL;
-assert.ok(base, 'Set SCOTTY_TEST_URL to an isolated server with POSTHOG_KEY empty');
+const base = process.env.BEADSCOPE_TEST_URL;
+assert.ok(base, 'Set BEADSCOPE_TEST_URL to an isolated server with POSTHOG_KEY empty');
 const settings = await (await fetch(`${base}/api/telemetry`)).json();
 assert.equal(settings.configured, false, 'UI test must not send production events');
 assert.equal((await fetch(`${base}/api/telemetry`, {method:'PUT',headers:{origin:base,'content-type':'application/json'},body:'{"enabled":true}'})).status,200);

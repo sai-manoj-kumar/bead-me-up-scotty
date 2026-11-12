@@ -4,8 +4,8 @@
 // and Clear all must still replace what the box shows.
 import assert from 'node:assert/strict';
 import { chromium } from 'playwright';
-const base = process.env.SCOTTY_TEST_URL;
-assert.ok(base, 'Set SCOTTY_TEST_URL to an isolated demo server');
+const base = process.env.BEADSCOPE_TEST_URL;
+assert.ok(base, 'Set BEADSCOPE_TEST_URL to an isolated demo server');
 const browser = await chromium.launch();
 try {
  const page = await browser.newPage({ viewport: { width: 1500, height: 1000 } });

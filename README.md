@@ -61,7 +61,7 @@ With [Homebrew](https://brew.sh) (macOS or Linux):
 
 ```bash
 brew install brendan-appstart/tap/bead-me-up-scotty
-scotty start      # runs in the background; `scotty stop` stops it
+beadscope start      # runs in the background; `beadscope stop` stops it
 ```
 
 Update with `brew upgrade bead-me-up-scotty`. Other options (from source, global
@@ -182,7 +182,7 @@ by default and saves automatically for all projects in the current browser.
 Lower-priority backlog and completed work remain
 available in Board and List.
 
-Set `SCOTTY_LANE_PREFIX=ctx:` to enable lane filters from labels such as
+Set `BEADSCOPE_LANE_PREFIX=ctx:` to enable lane filters from labels such as
 `ctx:frontend`. Without a prefix, lane filters are hidden. If a selected lane
 vanishes during a live refresh, Focus shows all lanes again.
 
@@ -198,7 +198,7 @@ session cookie preserves it through reloads; browser session restoration may
 also restore that cookie. Other browser sessions are unaffected. Settings lets
 you enable it again after dismissing the banner.
 
-Set `SCOTTY_READ_ONLY=1` (or `true`) when launching Scotty to make read-only the
+Set `BEADSCOPE_READ_ONLY=1` (or `true`) when launching Scotty to make read-only the
 default for new browser sessions. A browser can explicitly override that default
 from the banner. This is a local viewing preference, not a permissions system.
 Project write requests are rejected by the server while the requesting browser
@@ -214,10 +214,10 @@ DNS rebinding. If you reach Scotty through a LAN name (`mybox.local`) or a
 reverse proxy domain, allow it explicitly:
 
 ```bash
-SCOTTY_ALLOWED_HOSTS=mybox.local,tracker.example.com scotty start
+BEADSCOPE_ALLOWED_HOSTS=mybox.local,tracker.example.com beadscope start
 ```
 
-`SCOTTY_ALLOWED_HOSTS=*` accepts any hostname. That turns off the DNS-rebinding
+`BEADSCOPE_ALLOWED_HOSTS=*` accepts any hostname. That turns off the DNS-rebinding
 protection, so only use it when something else (a reverse proxy, a private
 network) decides who can reach Scotty. Writes sent from other websites are
 still refused even with `*`; to accept writes from a proxy's address, list
@@ -231,8 +231,8 @@ cross-site check looks at.
 ### Docker
 
 ```bash
-docker build -t bead-me-up-scotty .
-docker run -p 3000:3000 bead-me-up-scotty      # → http://localhost:3000
+docker build -t beadscope .
+docker run -p 3000:3000 beadscope      # → http://localhost:3000
 ```
 
 > The build runs `npm ci`, which needs the committed `package-lock.json` for
@@ -249,7 +249,7 @@ docker run -d -p 3000:3000 \
   --name beads_ui \
   -v $BEADS_REPO:/data \
   -e BEADS_REPO=/data \
-  bead-me-up-scotty
+  beadscope
 ```
 
 The container runs as a non-root `nextjs` user with `HOME=/home/nextjs` and
@@ -261,7 +261,7 @@ inside the container, so they are lost when it is recreated — bind-mount the
 config dir to keep them:
 
 ```bash
--v "$HOME/.config/bead-me-up-scotty:/home/nextjs/.config/bead-me-up-scotty"
+-v "$HOME/.config/beadscope:/home/nextjs/.config/beadscope"
 ```
 
 Container limitations:
@@ -274,12 +274,12 @@ Container limitations:
 - The bundled `bd` version is pinned in the Dockerfile (`ARG BD_VERSION`);
   override with `--build-arg BD_VERSION=<version>` to match your host.
 - Opening the container as `http://localhost:3000` or by IP works as-is; to use
-  a hostname, pass `-e SCOTTY_ALLOWED_HOSTS=<name>` (see
-  [Opening Scotty by a hostname](#opening-scotty-by-a-hostname)).
+  a hostname, pass `-e BEADSCOPE_ALLOWED_HOSTS=<name>` (see
+  [Opening Scotty by a hostname](#opening-beadscope-by-a-hostname)).
 
 ## Install globally
 
-Install once from a clone, then run `scotty start` (or `bead-me-up-scotty start`)
+Install once from a clone, then run `beadscope start`
 from **any** directory. It starts the production server in the background on a free
 port (default 3000) and opens your browser. Run it from a folder that has a `.beads`
 repo to jump straight to that project; otherwise you get the project picker.
@@ -287,49 +287,51 @@ Requires Node 20+.
 
 | Command | What it does |
 | --- | --- |
-| `scotty start` | Start the server in the background and open the browser. If it is already running, just opens the browser again. |
-| `scotty stop` | Stop the background server, from any terminal. |
-| `scotty status` | Show the URL and PID; exits 1 if it is not running. |
-| `scotty logs [-f] [-n N]` | Show the server log (`-f` to follow). |
-| `scotty run` | Run in the foreground instead; Ctrl+C stops it. |
+| `beadscope start` | Start the server in the background and open the browser. If it is already running, just opens the browser again. |
+| `beadscope stop` | Stop the background server, from any terminal. |
+| `beadscope status` | Show the URL and PID; exits 1 if it is not running. |
+| `beadscope logs [-f] [-n N]` | Show the server log (`-f` to follow). |
+| `beadscope run` | Run in the foreground instead; Ctrl+C stops it. |
 
 Flags for `start` and `run`: `-p, --port <n>` · `--host <h>` · `--no-open`. Run
-`scotty` with no command (or `--help`) for usage.
+`beadscope` with no command (or `--help`) for usage.
 
 The background server's PID and log are kept in
-`${XDG_CONFIG_HOME:-~/.config}/bead-me-up-scotty/` (`server.json`, `server.log`).
+`${XDG_CONFIG_HOME:-~/.config}/beadscope/` (`server.json`, `server.log`).
 The log is reset on every `start`.
 
-> **Upgrading from an earlier version?** A bare `scotty` used to start the server in
-> the foreground (and `scotty &` to background it). It now prints usage; use
-> `scotty start` (background) or `scotty run` (foreground). Environment variables
-> such as `SCOTTY_ALLOWED_HOSTS` are read when the server starts, so run
-> `scotty stop` then `scotty start` to apply a change.
+> **Coming from Bead Me Up, Scotty?** The command is now `beadscope` (there is no
+> `scotty` alias), and the environment variables are `BEADSCOPE_*` instead of
+> `SCOTTY_*`. On first start your settings (project list, actor, telemetry id) are
+> **copied** from `~/.config/bead-me-up-scotty/` to `~/.config/beadscope/`; the old
+> folder is left untouched. A bare `beadscope` prints usage; use `beadscope start`
+> (background) or `beadscope run` (foreground). Environment variables are read when
+> the server starts, so run `beadscope stop` then `beadscope start` to apply a change.
 
 **Recommended — `npm link` (keep the clone):**
 
 ```bash
-git clone <repo-url> bead-me-up-scotty
-cd bead-me-up-scotty
+git clone <repo-url> beadscope
+cd beadscope
 npm install
 npm run build
 npm link
-scotty start           # from anywhere
+beadscope start           # from anywhere
 ```
 
 The global command is a symlink to the clone, so keep it on disk and re-run
-`npm run build` after pulling changes. Uninstall: `npm rm -g bead-me-up-scotty`.
+`npm run build` after pulling changes. Uninstall: `npm rm -g beadscope`.
 
 **Alternative — global copy (clone is deletable):**
 
 ```bash
-git clone <repo-url> bead-me-up-scotty
-cd bead-me-up-scotty
+git clone <repo-url> beadscope
+cd beadscope
 npm install
 rm -rf .next           # ensure a clean build (only the prod build is shipped)
 npm run build
 npm install -g .
-scotty start           # from anywhere; the clone can now be deleted
+beadscope start           # from anywhere; the clone can now be deleted
 ```
 
 To update, rebuild and re-run `npm install -g .`. If `npm install -g .` hits a
@@ -391,8 +393,8 @@ also loads them from a local `.env`. Do not commit `.env` or private API keys.
 default. Switching it off stops future events across all projects and browsers
 connected to that local server. It does not delete previously received events.
 The preference lives in
-`$XDG_CONFIG_HOME/bead-me-up-scotty/telemetry.json` (default:
-`~/.config/bead-me-up-scotty/telemetry.json`), outside the Beads database.
+`$XDG_CONFIG_HOME/beadscope/telemetry.json` (default:
+`~/.config/beadscope/telemetry.json`), outside the Beads database.
 The random installation ID is stored alongside it in `telemetry.json.id`;
 daily event records, attempt reservations, and acknowledgements live in
 `telemetry.json.days/`. They coordinate server processes without a lock that
@@ -424,8 +426,8 @@ Verify the capture and privacy rules with `node scripts/test-telemetry.mjs`
 and a fake network transport; they do not send production events.
 
 For the Settings browser checks, start an isolated server with
-`XDG_CONFIG_HOME=/tmp/scotty-usage-test POSTHOG_KEY='' BEADS_DEMO=1 SCOTTY_READ_ONLY=1 npm run start -- --port 3197`,
-then run `SCOTTY_TEST_URL=http://localhost:3197 node scripts/test-telemetry-ui.mjs`.
+`XDG_CONFIG_HOME=/tmp/beadscope-usage-test POSTHOG_KEY='' BEADS_DEMO=1 BEADSCOPE_READ_ONLY=1 npm run start -- --port 3197`,
+then run `BEADSCOPE_TEST_URL=http://localhost:3197 node scripts/test-telemetry-ui.mjs`.
 The test refuses to run against an installation configured to send events.
 
 ## A small usage signal, and a thank you

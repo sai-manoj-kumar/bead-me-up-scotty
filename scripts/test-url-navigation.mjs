@@ -24,7 +24,7 @@ write(roundtrip, parsed);
 assert.deepEqual(JSON.parse(JSON.stringify(parse(roundtrip))), JSON.parse(JSON.stringify(parsed)));
 for (const [key,value] of [['view','list'],['bead','alpha'],['custom','keep'],['archived','1'],['done','7']]) assert.equal(roundtrip.get(key),value);
 
-const base = process.env.SCOTTY_TEST_URL; assert.ok(base, 'Set SCOTTY_TEST_URL');
+const base = process.env.BEADSCOPE_TEST_URL; assert.ok(base, 'Set BEADSCOPE_TEST_URL');
 const bead = (id, extra={}) => ({id,title:`Task ${id}`,status:'open',issue_type:'task',priority:1,labels:[],dependencies:[],created_at:'2026-09-01T00:00:00Z',updated_at:'2026-09-01T00:00:00Z',...extra});
 const beads = [bead('alpha',{assignee:'Alice',labels:['a&b']}),bead('beta',{assignee:'Bob'}),bead('blank'),bead('literal',{assignee:'__unassigned__'}),bead('archived',{labels:['archived']}),bead('recent',{assignee:'Carol',status:'closed',closed_at:new Date().toISOString()}),bead('old',{assignee:'Carol',status:'closed',closed_at:'2020-01-01T00:00:00Z'})];
 const browser = await chromium.launch();

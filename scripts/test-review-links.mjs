@@ -11,7 +11,7 @@ const input={description:'[Review](https://example.com/review_(draft)) ![screens
 assert.deepEqual([...reviewLinks(input)],['https://example.com/review_(draft)','attachment://decision/screen.png','/api/p/demo/attachments/decision/local.png','https://example.org/design','https://example.net/comment']);
 assert.equal(reviewLinks({description:'javascript:alert(1) data:text/html,test file:///tmp/foo attachment://../bad /api/p/demo/attachments/../../shutdown'}).length,0);
 assert.equal(reviewLinks({description:'An explanation can be reviewed without any links.'}).length,0);
-const base=process.env.SCOTTY_TEST_URL;assert.ok(base,'Set SCOTTY_TEST_URL');
+const base=process.env.BEADSCOPE_TEST_URL;assert.ok(base,'Set BEADSCOPE_TEST_URL');
 const bead=(id,extra={})=>({id,title:id,issue_type:'task',status:'open',priority:2,labels:[],dependencies:[],created_at:'2026-09-01T00:00:00Z',updated_at:'2026-09-01T00:00:00Z',...extra});
 const beads=[bead('decision',{labels:['human'],...input}),bead('gate',{issue_type:'gate',await_type:'human',description:'Please review the explanation in this bead.'})];
 const browser=await chromium.launch();

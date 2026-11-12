@@ -30,15 +30,15 @@ assert.equal(checkRequest({ host: 'anything.example', method: 'POST', origin: 'h
 assert.equal(checkRequest({ host: 'localhost:3000', method: 'POST', origin: 'http://evil.example', secFetchSite: null, allowedHosts: '*' }).ok, false);
 // Every refusal names the setting that would allow it.
 const hostRefusal = checkRequest({ host: 'mybox.local:3000', method: 'GET', origin: null, secFetchSite: null });
-assert.match(hostRefusal.error, /SCOTTY_ALLOWED_HOSTS=mybox\.local\b/);
-assert.match(hostRefusal.error, /SCOTTY_ALLOWED_HOSTS=\*/);
+assert.match(hostRefusal.error, /BEADSCOPE_ALLOWED_HOSTS=mybox\.local\b/);
+assert.match(hostRefusal.error, /BEADSCOPE_ALLOWED_HOSTS=\*/);
 const originRefusal = checkRequest({ ...base, method: 'POST', origin: 'https://tracker.example' });
 assert.match(originRefusal.error, /tracker\.example/);
-assert.match(originRefusal.error, /SCOTTY_ALLOWED_HOSTS=tracker\.example/);
+assert.match(originRefusal.error, /BEADSCOPE_ALLOWED_HOSTS=tracker\.example/);
 
 // ── Against the running server ──────────────────────────────────────────────
-const target = process.env.SCOTTY_TEST_URL;
-assert.ok(target, 'Set SCOTTY_TEST_URL to an isolated app server');
+const target = process.env.BEADSCOPE_TEST_URL;
+assert.ok(target, 'Set BEADSCOPE_TEST_URL to an isolated app server');
 const { hostname, port } = new URL(target);
 
 function send(method, path, headers = {}, body) {
