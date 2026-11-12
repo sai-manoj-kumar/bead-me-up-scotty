@@ -3,7 +3,7 @@ import * as React from "react";
 import { Command } from "cmdk";
 import { useRouter } from "next/navigation";
 import { useTheme } from "@/components/theme-provider";
-import { THEMES } from "@/lib/themes";
+import { SYSTEM_CHOICE, THEMES } from "@/lib/themes";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Icon } from "@/components/icons";
 import { useApp, type View } from "@/components/app-context";
@@ -329,7 +329,7 @@ function PaletteBody({
 
         {page === "theme" && (
           <Command.Group heading="Theme">
-            {THEMES.map((t) => (
+            {[SYSTEM_CHOICE, ...THEMES].map((t) => (
               <Item
                 key={t.id}
                 dotColor={t.swatch[2]}
