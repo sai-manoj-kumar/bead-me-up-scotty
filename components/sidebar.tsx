@@ -28,8 +28,8 @@ function githubIssueUrl(kind: "bug" | "feature"): string {
     title: isBug ? "[Bug] " : "[Feature] ",
     labels: isBug ? "bug" : "enhancement",
     body: isBug
-      ? "## Steps to reproduce\n\n1. \n2. \n\n## Expected\n\n## Actual\n\n---\n_Filed from Bead Me Up, Scotty_"
-      : "## Problem\n\n## Proposed solution\n\n---\n_Filed from Bead Me Up, Scotty_",
+      ? "## Steps to reproduce\n\n1. \n2. \n\n## Expected\n\n## Actual\n\n---\n_Filed from Beadscope_"
+      : "## Problem\n\n## Proposed solution\n\n---\n_Filed from Beadscope_",
   });
   return `https://github.com/${GITHUB_REPO}/issues/new?${params.toString()}`;
 }
@@ -85,7 +85,7 @@ export function Sidebar({
           <Icon name="logo" size={17} />
         </div>
         <div className="text-sm font-[650] leading-[1.15] tracking-[-.01em]">
-          Bead Me Up Scotty
+          Beadscope
         </div>
       </div>
 

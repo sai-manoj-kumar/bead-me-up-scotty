@@ -33,7 +33,7 @@ export function GateApproval({ id }: { id: string }) {
     if (readOnly || submitting.current) return;
     submitting.current = true;
     const actor = meta?.humanActor?.trim() || "human reviewer";
-    const decision = `Approved by ${actor} via Scotty at ${new Date().toISOString()}`;
+    const decision = `Approved by ${actor} via Beadscope at ${new Date().toISOString()}`;
     approval.mutate(note.trim() ? `${decision}\n\n${note.trim()}` : decision);
   };
   return (

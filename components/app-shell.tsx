@@ -248,7 +248,7 @@ export function AppShell({ projectId }: { projectId: string }) {
             </SheetContent>
           </Sheet>
           <div className="min-w-0 flex-1 truncate text-[12.5px] font-semibold text-[var(--text)]">
-            Bead Me Up Scotty
+            Beadscope
           </div>
         </div>
         <div className="flex min-h-0 flex-1 overflow-hidden">

@@ -1,7 +1,7 @@
 import type { Bead, Comment, Dependency } from "./schema";
 
 /**
- * Demo dataset for Bead Me Up, Scotty.
+ * Demo dataset for Beadscope.
  *
  * This is the data source for demo mode (when bd isn't installed, or when demo
  * mode is forced via the BEADS_DEMO env var / the Settings toggle). It's a
@@ -119,7 +119,7 @@ export function demoBeads(): Bead[] {
     D("bd-hmn1", "Need a human call: which OAuth provider for sign-in?", "decision", "open", 1, "claude-agent", "stevey", null, { description: "I can wire Clerk, Auth0, or Descope. Clerk is the native Marketplace option — but you own this call before I build the middleware.", labels: ["human"], created_at: "2026-06-24T08:30:00Z", updated_at: "2026-06-24T08:30:00Z" }),
     D("bd-hmn2", "Decision needed: drop the legacy CSV export?", "decision", "open", 2, "cursor-agent", "", null, { description: "Usage is near zero and it blocks the new report template. OK to remove it?", labels: ["human"], created_at: "2026-06-24T09:10:00Z", updated_at: "2026-06-24T09:10:00Z" }),
     // Markdown + interactive checklist in the description.
-    D("bd-ck1", "Ship the onboarding flow", "feature", "in_progress", 1, "stevey", "stevey", null, { description: "Guided first-run experience.\n\n## Acceptance criteria\n- [x] Detect first launch\n- [x] Welcome step with the project picker\n- [ ] Sample project seeding\n- [ ] Dismiss + don't-show-again\n- [ ] Docs link\n\nSee the **[spec](https://beadmeupscotty.com)** for the full flow.", created_at: "2026-06-20T10:00:00Z", updated_at: "2026-06-24T11:00:00Z", comments: [cm("dana", "Love it — keep the welcome step to one screen.", "2026-06-24T11:30:00Z")] }),
+    D("bd-ck1", "Ship the onboarding flow", "feature", "in_progress", 1, "stevey", "stevey", null, { description: "Guided first-run experience.\n\n## Acceptance criteria\n- [x] Detect first launch\n- [x] Welcome step with the project picker\n- [ ] Sample project seeding\n- [ ] Dismiss + don't-show-again\n- [ ] Docs link\n\nSee the **[spec](https://github.com/sai-manoj-kumar/beadscope)** for the full flow.", created_at: "2026-06-20T10:00:00Z", updated_at: "2026-06-24T11:00:00Z", comments: [cm("dana", "Love it — keep the welcome step to one screen.", "2026-06-24T11:30:00Z")] }),
     // Recent consecutive closes by the human actor → streak, throughput, XP, badges.
     D("bd-win1", "Fix flaky drag-drop rollback", "bug", "closed", 1, "stevey", "stevey", null, { description: "Coalesce optimistic moves so rollback no longer flickers.", created_at: "2026-06-19T09:00:00Z", closed_at: "2026-06-21T16:30:00Z" }),
     D("bd-win2", "Speed up board first paint", "task", "closed", 2, "stevey", "stevey", null, { description: "Memoize the index and lazy-load the graph bundle.", created_at: "2026-06-20T09:00:00Z", closed_at: "2026-06-22T14:00:00Z" }),

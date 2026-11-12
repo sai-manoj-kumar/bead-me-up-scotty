@@ -444,7 +444,7 @@ export function buildReport(opts: {
 
   return `<section class="dr" id="dr" data-theme="light" data-curviz="throughput">
   <header class="dr-head">
-    <div class="dr-brand"><span class="dr-logo">${ic("logo", 22)}</span><div><h2>Delivery Report</h2><div class="dr-meta">Bead Me Up, Scotty · ${esc(where)} · ${esc(asOf)}</div></div></div>
+    <div class="dr-brand"><span class="dr-logo">${ic("logo", 22)}</span><div><h2>Delivery Report</h2><div class="dr-meta">Beadscope · ${esc(where)} · ${esc(asOf)}</div></div></div>
     <div class="dr-spacer"></div>
     <div class="dr-controls">
       <button class="dr-btn dr-demo-btn" data-act="demo" aria-pressed="false" title="Toggle demo components">${ic("layers", 14)}<span class="lbl">Real data only</span></button>

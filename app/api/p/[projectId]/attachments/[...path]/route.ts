@@ -58,7 +58,7 @@ export async function GET(_req: Request, { params }: Ctx) {
         "Content-Length": String(stat.size),
         // Attachments come from bead data that agents or collaborators can
         // write. Opened directly (review-link chips open them in a tab), an SVG
-        // would otherwise run its scripts on Scotty's origin with access to
+        // would otherwise run its scripts on Beadscope's origin with access to
         // every API. The sandbox gives the document an opaque origin and no
         // script; nosniff stops other files being reinterpreted as HTML.
         "Content-Security-Policy": "default-src 'none'; img-src 'self' data:; style-src 'unsafe-inline'; sandbox",

@@ -27,7 +27,7 @@ import { checkRequest } from "@/lib/request-guard";
  * build time would have failed open while the UI still claimed read-only.
  */
 // Refusals are logged once per reason and address, so someone whose setup
-// stopped working sees the fix in the terminal running Scotty, not only in
+// stopped working sees the fix in the terminal running Beadscope, not only in
 // a browser's network panel.
 const reported = new Set<string>();
 
