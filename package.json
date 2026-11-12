@@ -3,7 +3,7 @@
   "version": "0.4.0",
   "private": true,
   "license": "MIT",
-  "author": "Brendan <brendan@appstart.one>",
+  "author": "Sai Manoj Kumar Yadlapati",
   "bin": {
     "beadscope": "bin/beadscope.mjs"
   },
