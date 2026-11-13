@@ -59,7 +59,7 @@ export function createUpdater(options: Options) {
     return sha;
   }
   async function checkoutProblem(): Promise<string | undefined> {
-    if (!isGit()) return "This installation needs a manual update. Follow the instructions in the release notes for a global copy, source download, or Docker installation.";
+    if (!isGit()) return "This installation needs a manual update. Run `npm install -g beadscope` or `brew upgrade beadscope`, then `beadscope stop` and `beadscope start`; for a source download or Docker, follow the release notes.";
     const branch = await git("branch", "--show-current");
     if (branch && branch !== "main") return "Switch to the main branch before updating; your working branch will not be changed.";
     if (await git("status", "--porcelain")) return "Your checkout has uncommitted changes. Commit or stash them before updating.";

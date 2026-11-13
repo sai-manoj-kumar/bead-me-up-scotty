@@ -55,24 +55,35 @@ by Brendan; see [Credits](#credits).
 
 ## Quick install
 
-Requires **Node 20+**, npm and git. For live data you also need the
+Requires **Node 20+**. For live data you also need the
 [`bd`](https://github.com/gastownhall/beads) binary on your `PATH`; without it,
 Beadscope runs in demo mode.
 
+**npm** (any platform):
+
 ```bash
-git clone https://github.com/sai-manoj-kumar/beadscope.git
-cd beadscope
-npm install
-npm run build
-npm link
+npm install -g beadscope
 beadscope start        # runs in the background; `beadscope stop` stops it
 ```
 
+**Homebrew** (macOS; also installs Node and `bd`):
+
+```bash
+brew install sai-manoj-kumar/beadscope/beadscope
+beadscope start
+```
+
+If Homebrew 7 stops with "untrusted tap", run `brew trust sai-manoj-kumar/beadscope`
+and install again.
+
 Run `beadscope start` from a folder that has a `.beads` repo to open straight to
-that project, or from anywhere to get the project picker. The global command is a
-symlink to your clone, so keep the folder and re-run `npm run build` after pulling
-changes. More options (a standalone global copy, running from source, Docker) are
-below; see [Install globally](#install-globally).
+that project, or from anywhere to get the project picker.
+
+**Update:** `npm install -g beadscope` or `brew upgrade beadscope`, then
+`beadscope stop` and `beadscope start`.
+
+Other ways to run it: [from a clone](#install-from-source) (to hack on it) and
+[Docker](#docker).
 
 ## Features
 
@@ -141,10 +152,9 @@ detail links, and read-only protections also work in the grouped layout.
 ## Releases and updates
 
 Releases are published on this repository's
-[GitHub Releases](https://github.com/sai-manoj-kumar/beadscope/releases) page; none
-have been published yet, so until one exists the stable channel reports no update
-and the **Development (main)** channel is the way to follow changes. The sidebar
-displays the running app version.
+[GitHub Releases](https://github.com/sai-manoj-kumar/beadscope/releases) page. Pushing
+a version tag also publishes that version to npm and updates the Homebrew tap. The
+sidebar displays the running app version.
 
 In **Settings → Software updates**, choose **Stable releases** (the default) or
 **Development (main)**. Stable checks published GitHub releases for all installation
@@ -157,8 +167,9 @@ A clean main/detached Git checkout can install the exact advertised target with
 **Update now**. Dependencies are restored with `npm ci` and the app is rebuilt.
 The supervised `npm run serve` launcher restarts automatically; other launchers
 need a manual restart. Local changes or diverged history must be resolved first.
-Global copies, source downloads, and Docker installations receive the notice with
-manual update instructions. No update is installed automatically.
+npm, Homebrew, source-download and Docker installations receive the notice with
+manual update instructions (`npm install -g beadscope` or `brew upgrade beadscope`,
+then restart). No update is installed automatically.
 
 Release notes and the versioning policy are in [`docs/releases/`](docs/releases/).
 
@@ -244,7 +255,12 @@ cross-site check looks at.
 
 ### Docker
 
+There is no published image: build it from a clone. CI builds and smoke-tests the
+Dockerfile on every pull request that touches it.
+
 ```bash
+git clone https://github.com/sai-manoj-kumar/beadscope.git
+cd beadscope
 docker build -t beadscope .
 docker run -p 3000:3000 beadscope      # → http://localhost:3000
 ```
@@ -260,7 +276,7 @@ mount your project directory and point `BEADS_REPO` at it:
 ```bash
 BEADS_REPO=/path/to/project
 docker run -d -p 3000:3000 \
-  --name beads_ui \
+  --name beadscope \
   -v $BEADS_REPO:/data \
   -e BEADS_REPO=/data \
   beadscope
@@ -291,13 +307,13 @@ Container limitations:
   a hostname, pass `-e BEADSCOPE_ALLOWED_HOSTS=<name>` (see
   [Opening Beadscope by a hostname](#opening-beadscope-by-a-hostname)).
 
-## Install globally
+## The `beadscope` command
 
-Install once from a clone, then run `beadscope start`
-from **any** directory. It starts the production server in the background on a free
-port (default 3000) and opens your browser. Run it from a folder that has a `.beads`
-repo to jump straight to that project; otherwise you get the project picker.
-Requires Node 20+.
+After an [npm or Homebrew install](#quick-install) (or [from source](#install-from-source)),
+run `beadscope start` from **any** directory. It starts the production server in the
+background on a free port (default 3000) and opens your browser. Run it from a folder
+that has a `.beads` repo to jump straight to that project; otherwise you get the
+project picker. Requires Node 20+.
 
 | Command | What it does |
 | --- | --- |
@@ -318,7 +334,11 @@ The log is reset on every `start`.
 > `beadscope run` (foreground). Environment variables are read when the server
 > starts, so run `beadscope stop` then `beadscope start` to apply a change.
 
-**Recommended — `npm link` (keep the clone):**
+### Install from source
+
+For trying unreleased changes or hacking on Beadscope. Needs git and npm as well.
+
+**`npm link` (keep the clone):**
 
 ```bash
 git clone https://github.com/sai-manoj-kumar/beadscope.git beadscope
