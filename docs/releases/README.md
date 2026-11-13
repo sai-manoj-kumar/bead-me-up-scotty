@@ -9,9 +9,11 @@ on this repository's
 Beadscope's version numbers continue from the release this fork was started from
 (**v0.4.0**) instead of restarting at 0.1.0.
 
-`package.json` is at **0.5.0**, the version of the first Beadscope release. It is a
-breaking release (new command name, new environment variable names, new config
-directory), so it takes a minor-version bump while the project is pre-1.0.
+`package.json` is at **0.5.1**. **0.5.0** was the first Beadscope release, published to npm by
+hand before the release workflow existed, so it has notes but no git tag or GitHub
+Release page. It was a breaking release (new command name, new environment variable
+names, new config directory), so it took a minor-version bump while the project is
+pre-1.0. **0.5.1** is the first release made by the workflow.
 
 ## Releasing
 
