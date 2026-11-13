@@ -1,0 +1,147 @@
+name: Release
+
+# Pushing a vX.Y.Z tag publishes that version: it runs the CI checks, publishes the
+# npm package, creates the GitHub release from docs/releases/vX.Y.Z.md, and bumps the
+# Homebrew tap formula. Every step skips itself when its work is already done, so a
+# failed run can be re-run, and a tag for a version that is already on npm still gets
+# its GitHub release and tap bump.
+#
+# To release: bump "version" in package.json, add docs/releases/vX.Y.Z.md, merge to
+# main, then `git tag vX.Y.Z && git push origin vX.Y.Z`.
+#
+# One-time setup this workflow depends on (neither is a stored npm token):
+#   - npm trusted publisher for the `beadscope` package: repository
+#     sai-manoj-kumar/beadscope, workflow release.yml. npm then accepts this job's
+#     OIDC identity and records a provenance attestation.
+#   - TAP_DEPLOY_KEY secret: the private half of a write-enabled deploy key on
+#     sai-manoj-kumar/homebrew-beadscope. It can push to that one repository only.
+on:
+  push:
+    tags: ["v[0-9]+.[0-9]+.[0-9]+"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+env:
+  NEXT_TELEMETRY_DISABLED: "1"
+
+jobs:
+  check:
+    uses: ./.github/workflows/ci.yml
+
+  publish:
+    needs: check
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write # create the GitHub release
+      id-token: write # npm trusted publishing and provenance
+    env:
+      TAG: ${{ github.ref_name }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Verify the tag
+        run: |
+          version="${TAG#v}"
+          package_version="$(node -p "require('./package.json').version")"
+          if [ "$version" != "$package_version" ]; then
+            echo "::error::Tag $TAG does not match package.json version $package_version"
+            exit 1
+          fi
+          if ! git merge-base --is-ancestor "$GITHUB_SHA" origin/main; then
+            echo "::error::$TAG is not on main. Release from a commit that has been merged."
+            exit 1
+          fi
+          if [ ! -f "docs/releases/$TAG.md" ]; then
+            echo "::error::docs/releases/$TAG.md is missing"
+            exit 1
+          fi
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          registry-url: https://registry.npmjs.org
+
+      - name: Install
+        run: npm ci
+
+      # prepack runs `next build`, and publishConfig turns provenance on.
+      - name: Publish to npm
+        run: |
+          version="${TAG#v}"
+          if npm view "beadscope@$version" version >/dev/null 2>&1; then
+            echo "beadscope@$version is already on npm; skipping publish"
+          else
+            npm publish
+          fi
+
+      - name: Create the GitHub release
+        run: |
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release $TAG already exists; skipping"
+            exit 0
+          fi
+          notes="docs/releases/$TAG.md"
+          title="$(sed -n '1s/^# //p' "$notes")"
+          tail -n +2 "$notes" > "$RUNNER_TEMP/notes.md"
+          gh release create "$TAG" --verify-tag --title "${title:-$TAG}" --notes-file "$RUNNER_TEMP/notes.md"
+
+  tap:
+    needs: publish
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      TAG: ${{ github.ref_name }}
+      TAP_DEPLOY_KEY: ${{ secrets.TAP_DEPLOY_KEY }}
+    steps:
+      - name: Hash the published tarball
+        run: |
+          version="${TAG#v}"
+          url="https://registry.npmjs.org/beadscope/-/beadscope-$version.tgz"
+          # The registry can lag a few seconds behind a fresh publish.
+          for attempt in 1 2 3 4 5 6 7 8 9 10; do
+            if curl -fsSL "$url" -o "$RUNNER_TEMP/beadscope.tgz"; then break; fi
+            if [ "$attempt" = 10 ]; then
+              echo "::error::Could not download $url"
+              exit 1
+            fi
+            sleep 15
+          done
+          {
+            echo "TARBALL_URL=$url"
+            echo "TARBALL_SHA=$(sha256sum "$RUNNER_TEMP/beadscope.tgz" | cut -d' ' -f1)"
+          } >> "$GITHUB_ENV"
+
+      - name: Update the tap formula
+        run: |
+          if [ -z "$TAP_DEPLOY_KEY" ]; then
+            echo "::error::The TAP_DEPLOY_KEY secret is not set"
+            exit 1
+          fi
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$TAP_DEPLOY_KEY" > ~/.ssh/tap_key
+          chmod 600 ~/.ssh/tap_key
+          ssh-keyscan github.com >> ~/.ssh/known_hosts 2>/dev/null
+          export GIT_SSH_COMMAND="ssh -i $HOME/.ssh/tap_key -o IdentitiesOnly=yes"
+
+          git clone git@github.com:sai-manoj-kumar/homebrew-beadscope.git tap
+          cd tap
+          perl -pi -e 's{^(\s*url ").*(")}{$1$ENV{TARBALL_URL}$2}; s{^(\s*sha256 ").*(")}{$1$ENV{TARBALL_SHA}$2}' Formula/beadscope.rb
+
+          if git diff --quiet; then
+            echo "The formula already points at ${TAG#v}; nothing to do"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -am "beadscope ${TAG#v}"
+          git push origin HEAD:main
