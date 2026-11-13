@@ -1,4 +1,12 @@
 // Isolated demo server only; project data is intercepted and never written.
+//
+// The server must start read-only, because the test checks that the detail drawer is not editable:
+//
+//   XDG_CONFIG_HOME=$(mktemp -d) BEADS_DEMO=1 BEADSCOPE_READ_ONLY=1 beadscope start --no-open --port 3461
+//   BEADSCOPE_TEST_URL=http://localhost:3461 node scripts/test-focus.mjs
+//
+// PLAYWRIGHT_CHROMIUM_PATH points at a specific Chromium binary if Playwright's own download is not
+// the build it expects.
 import assert from 'node:assert/strict';
 import { chromium } from 'playwright';
 const base = process.env.BEADSCOPE_TEST_URL;
@@ -18,7 +26,8 @@ const beads = [
   bead('archived', { labels: ['archived'] }),
   bead('gate', { issue_type: 'gate', await_type: 'human', priority: 3, dependencies: [dep('waits-for', 'upstream')] }),
 ];
-const browser = await chromium.launch();
+const exe = process.env.PLAYWRIGHT_CHROMIUM_PATH;
+const browser = await chromium.launch(exe ? { executablePath: exe } : {});
 try {
   const page = await browser.newPage({ viewport: { width: 1500, height: 1000 } });
   let lanePrefix = 'ctx:';
