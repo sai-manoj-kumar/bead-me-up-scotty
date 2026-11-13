@@ -98,7 +98,7 @@ jobs:
   tap:
     needs: publish
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 60
     env:
       TAG: ${{ github.ref_name }}
       TAP_DEPLOY_KEY: ${{ secrets.TAP_DEPLOY_KEY }}
@@ -107,14 +107,21 @@ jobs:
         run: |
           version="${TAG#v}"
           url="https://registry.npmjs.org/beadscope/-/beadscope-$version.tgz"
-          # The registry can lag a few seconds behind a fresh publish.
-          for attempt in 1 2 3 4 5 6 7 8 9 10; do
-            if curl -fsSL "$url" -o "$RUNNER_TEMP/beadscope.tgz"; then break; fi
-            if [ "$attempt" = 10 ]; then
-              echo "::error::Could not download $url"
+          # npm accepts a publish before it serves the tarball: v0.5.1 took about 22
+          # minutes. Back off exponentially (5s, 10s, 20s ... capped at 2 minutes) and
+          # give up after 45 minutes.
+          deadline=$((SECONDS + 45 * 60))
+          delay=5
+          attempt=1
+          until curl -fsSL "$url" -o "$RUNNER_TEMP/beadscope.tgz" 2>/dev/null; do
+            if [ "$SECONDS" -ge "$deadline" ]; then
+              echo "::error::$url was still not available after 45 minutes"
               exit 1
             fi
-            sleep 15
+            echo "Attempt $attempt: tarball not served yet, retrying in ${delay}s"
+            sleep "$delay"
+            attempt=$((attempt + 1))
+            delay=$((delay * 2 > 120 ? 120 : delay * 2))
           done
           {
             echo "TARBALL_URL=$url"
