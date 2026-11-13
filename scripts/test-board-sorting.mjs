@@ -1,4 +1,13 @@
 // Board sorting regression. Uses only intercepted demo fixtures; no project data is read or written.
+//
+// Needs an isolated demo server that starts read-only (the test asserts that drags are blocked
+// until it unlocks editing for its own browser session):
+//
+//   XDG_CONFIG_HOME=$(mktemp -d) BEADS_DEMO=1 BEADSCOPE_READ_ONLY=1 beadscope start --no-open --port 3461
+//   BEADSCOPE_TEST_URL=http://localhost:3461 node scripts/test-board-sorting.mjs
+//
+// PLAYWRIGHT_CHROMIUM_PATH points at a specific Chromium binary if Playwright's own download is not
+// the build it expects.
 import assert from "node:assert/strict";
 import { chromium } from "playwright";
 
@@ -33,7 +42,8 @@ const beads = [
 const orders = { ready: ["manual-a", "manual-z"] };
 const writes = [];
 
-const browser = await chromium.launch();
+const exe = process.env.PLAYWRIGHT_CHROMIUM_PATH;
+const browser = await chromium.launch(exe ? { executablePath: exe } : {});
 let page;
 try {
   const context = await browser.newContext({ viewport: { width: 1500, height: 1000 } });
@@ -65,7 +75,8 @@ try {
     return route.fulfill({ json: beads.find((candidate) => path.endsWith(`/beads/${candidate.id}`)) ?? {} });
   });
 
-  const sort = () => page.getByLabel("Sort board cards", { exact: true });
+  // Role queries skip the hidden copy of the page that streamed server rendering leaves in the DOM until hydration finishes; getByLabel would match it too.
+  const sort = () => page.getByRole("combobox", { name: "Sort board cards", exact: true });
   const card = (id) => page.locator(`[data-keyboard-bead-id="${id}"]`);
   const column = (name) => page.getByText(name, { exact: true }).locator("xpath=ancestor::section[1]");
   const readyIds = () => column("Ready").locator("article").evaluateAll((cards) => cards.map((card) => card.dataset.keyboardBeadId));
