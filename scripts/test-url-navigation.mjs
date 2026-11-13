@@ -52,7 +52,7 @@ try {
   await page.reload(); await heading('Board'); await expectIds(['blank']);
   await page.goBack(); await heading('List'); await expectIds(['blank']);
   await page.goForward(); await heading('Board');
-  await page.getByTitle('Clear all filters',{exact:true}).click();
+  await page.locator('button[title="Clear all filters"]:visible').click();
   await expectIds(['alpha','beta','blank','literal','recent','old']);
   await page.evaluate(()=>{window.__navigationMarker='same document';});
   await search().fill('Task'); await search().fill('Task alpha');
@@ -69,7 +69,7 @@ try {
   // Clear All is one atomic entry and preserves the independent Done window.
   await page.goto(`${base}/p/demo?view=board&archived=1&assignee=Alice&label=a%26b&done=7&custom=keep#anchor`);
   await heading('Board'); await expectIds(['alpha']);
-  await page.getByTitle('Clear all filters',{exact:true}).click();
+  await page.locator('button[title="Clear all filters"]:visible').click();
   await expectIds(['alpha','beta','blank','literal','recent']);
   assert.equal(params().get('done'),'7'); assert.equal(params().get('archived'),null); assert.equal(params().get('custom'),'keep');
   await page.goBack(); await expectIds(['alpha']); assert.equal(params().get('archived'),'1'); assert.equal(params().get('label'),'a&b');
@@ -90,6 +90,8 @@ try {
   await page.goBack(); await dialog.getByText('Task alpha',{exact:true}).waitFor();
   // A history change with the same bead preserves the actual editable draft.
   await context.request.put(`${base}/api/viewer-mode`,{data:{readOnly:false}});
+  // The page polls the mode every 5s; tell it now, the way another tab would (BroadcastChannel).
+  await page.evaluate(()=>{const channel=new BroadcastChannel('beadscope-viewer-mode');channel.postMessage('changed');channel.close();});
   await page.getByRole('button',{name:'Read Only Mode',exact:true}).waitFor({state:'detached'});
   const draft=page.getByPlaceholder(/^Comment as/); await draft.fill('Keep draft across history');
   await page.evaluate(()=>{const url=new URL(location.href);url.searchParams.set('q','alpha');history.pushState(null,'',url);});

@@ -42,7 +42,8 @@ jobs:
         run: npx tsc --noEmit
 
       # Only the tests that need neither a browser nor a running server. The
-      # Playwright suites (test-*.mjs with BEADSCOPE_TEST_URL) are not run here yet.
+      # Playwright suites (test-*.mjs with BEADSCOPE_TEST_URL) run in the
+      # "browser" job below.
       - name: Unit and launcher tests
         run: |
           for t in actor-default blocking dep-candidates telemetry updates daemon; do
@@ -53,3 +54,34 @@ jobs:
 
       - name: Build
         run: npm run build
+
+  # Runs every Playwright suite in scripts/ against throwaway demo servers (see
+  # scripts/run-browser-tests.mjs). Kept apart from "check" so it can be made a
+  # required status check once its runtime and stability are known. Not called by
+  # the release workflow.
+  browser:
+    name: browser
+    # The release workflow reuses this file on a tag; github.event_name is then the
+    # caller's event, so the ref type is what tells the two apart.
+    if: github.ref_type != 'tag'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Build
+        run: npm run build
+
+      - name: Browser suites
+        run: npm run test:browser
