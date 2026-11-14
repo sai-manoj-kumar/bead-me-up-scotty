@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Plus, Trash2, FlaskConical, FolderGit2, Loader2 } from "lucide-react";
 import { Icon } from "@/components/icons";
 import { useTheme } from "@/components/theme-provider";
+import { themeButtonInfo } from "@/lib/themes";
 import { useProjects } from "@/hooks/use-projects";
 import { FolderBrowserModal } from "@/components/folder-browser-modal";
 import { api, type ProjectInfo } from "@/lib/api-client";
@@ -13,7 +14,8 @@ import { api, type ProjectInfo } from "@/lib/api-client";
 export function Launcher() {
   const { data, isLoading } = useProjects();
   const [addOpen, setAddOpen] = React.useState(false);
-  const { mode, toggle } = useTheme();
+  const { mode, choice, toggle } = useTheme();
+  const themeButton = themeButtonInfo(choice, mode);
 
   const projects = data?.projects ?? [];
   const demo = projects.find((p) => p.id === "demo");
@@ -36,10 +38,11 @@ export function Launcher() {
         </div>
         <button
           onClick={toggle}
-          title="Toggle theme"
+          title={themeButton.title}
+          aria-label={themeButton.title}
           className="flex h-[34px] w-[34px] items-center justify-center rounded-lg border border-border bg-[var(--surface)] text-[var(--text-2)] hover:bg-[var(--surface-2)]"
         >
-          <Icon name={mode === "dark" ? "sun" : "moon"} size={15} />
+          <Icon name={themeButton.icon} size={15} />
         </button>
       </header>
 

@@ -39,7 +39,7 @@ export const KEYBOARD_SHORTCUT_GROUPS: KeyboardShortcutGroup[] = [
       { keys: ["/"], label: "Focus search" },
       { keys: ["⌘/Ctrl", "Enter"], label: "Submit the focused text field" },
       { keys: ["N"], label: "Create an issue" },
-      { keys: ["T"], label: "Toggle light / dark theme" },
+      { keys: ["T"], label: "Cycle theme: System / Light / Dark" },
       { keys: ["Esc"], label: "Close the active drawer or dialog" },
     ],
   },

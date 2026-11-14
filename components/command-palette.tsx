@@ -3,7 +3,7 @@ import * as React from "react";
 import { Command } from "cmdk";
 import { useRouter } from "next/navigation";
 import { useTheme } from "@/components/theme-provider";
-import { SYSTEM_CHOICE, THEMES } from "@/lib/themes";
+import { SYSTEM_CHOICE, THEMES, themeButtonInfo } from "@/lib/themes";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Icon } from "@/components/icons";
 import { useApp, type View } from "@/components/app-context";
@@ -21,7 +21,7 @@ import { navViews } from "@/lib/views";
 // opens the close-with-reason dialog instead.
 const SHORTCUTS = {
   create: findShortcut("Global", "Create an issue"),
-  toggleTheme: findShortcut("Global", "Toggle light / dark theme"),
+  toggleTheme: findShortcut("Global", "Cycle theme: System / Light / Dark"),
   switchProject: findShortcut("Repositories", "Choose a repository"),
   openDetails: findShortcut("Issues", "Open selected issue", "O"),
   setStatus: findShortcut("Issues", "Set selected issue status"),
@@ -96,7 +96,8 @@ function PaletteBody({
 }) {
   const { beads, index, meta, openDetail, openCreate, projectId, readOnly } = useApp();
   const router = useRouter();
-  const { mode, setTheme, toggle } = useTheme();
+  const { mode, choice, setTheme, toggle } = useTheme();
+  const themeButton = themeButtonInfo(choice, mode);
   const setStatus = useSetStatus();
   const update = useUpdateBead();
   const { data: projectsData } = useProjects();
@@ -191,12 +192,12 @@ function PaletteBody({
                 Create bead…
               </Item>}
               <Item
-                icon={mode === "dark" ? "sun" : "moon"}
-                value="toggle theme dark light"
+                icon={themeButton.icon}
+                value="toggle theme cycle system dark light"
                 shortcut={SHORTCUTS.toggleTheme}
                 onSelect={() => run(() => toggle())}
               >
-                Toggle theme · {mode === "dark" ? "light" : "dark"}
+                {themeButton.title}
               </Item>
               <Item
                 icon="settings"
