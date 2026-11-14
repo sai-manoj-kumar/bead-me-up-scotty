@@ -73,3 +73,32 @@ export function resolveChoice(choice: string, prefersDark: boolean): ThemeDef {
     ? BY_ID.get(prefersDark ? "dark" : "light")!
     : getTheme(choice);
 }
+
+/** The quick-switch order: follow the OS, then Light, then Dark, then back to the OS. */
+const THEME_CYCLE = [SYSTEM_CHOICE_ID, "light", "dark"];
+
+/**
+ * The choice the quick-switch button saves next. Any other palette (Nord,
+ * Dracula, ...) is outside the cycle, so it moves on to System; pick a palette
+ * again in Settings.
+ */
+export function nextChoiceId(choice: string): string {
+  return THEME_CYCLE[(THEME_CYCLE.indexOf(choice) + 1) % THEME_CYCLE.length];
+}
+
+/** Display name of a choice id ("System", "Light", "Nord", ...). */
+export function choiceName(choice: string): string {
+  return choice === SYSTEM_CHOICE_ID ? SYSTEM_CHOICE.name : getTheme(choice).name;
+}
+
+/**
+ * What the quick-switch button shows: an icon for the current choice (a monitor
+ * for System, otherwise a sun or moon for the painted palette) and a tooltip
+ * naming it and the next one.
+ */
+export function themeButtonInfo(choice: string, mode: ThemeMode) {
+  return {
+    icon: choice === SYSTEM_CHOICE_ID ? "monitor" : mode === "dark" ? "moon" : "sun",
+    title: `Theme: ${choiceName(choice)} — click for ${choiceName(nextChoiceId(choice))}`,
+  };
+}

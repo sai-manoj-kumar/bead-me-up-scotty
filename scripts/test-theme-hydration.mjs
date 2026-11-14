@@ -7,7 +7,7 @@ try {
  const page=await browser.newPage();
  const errors=[];
  // During load a second, hidden toggle can be mounted briefly; act on the visible one.
- const themeToggle=()=>page.getByTitle('Toggle theme',{exact:true}).filter({visible:true});
+ const themeToggle=()=>page.getByRole('button',{name:/^Theme: /}).filter({visible:true});
  page.on('console',msg=>{if(msg.type()==='error') errors.push(msg.text());});
  page.on('pageerror',e=>errors.push(e.message));
  await page.addInitScript(()=>{
@@ -23,6 +23,9 @@ try {
  await themeToggle().waitFor();
  await page.waitForFunction(()=>document.documentElement.dataset.theme==='dark');
  assert.deepEqual(errors,[], 'saved dark theme must hydrate without console errors');
+ // Dark cycles to System first (headless Chromium reports a light OS), then to Light.
+ await themeToggle().click();
+ await page.waitForFunction(()=>localStorage.getItem('beadscope.theme.demo')==='system');
  await themeToggle().click();
  await page.waitForFunction(()=>document.documentElement.dataset.theme==='light');
  await page.reload();

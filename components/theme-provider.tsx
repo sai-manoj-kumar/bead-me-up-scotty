@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import {
   DEFAULT_CHOICE_ID,
   getChoiceId,
+  nextChoiceId,
   resolveChoice,
   type ThemeDef,
   type ThemeMode,
@@ -141,13 +142,11 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     getStore()?.setItem(storageKey(projectId), getChoiceId(id));
     window.dispatchEvent(new Event(THEME_EVENT));
   }
-  // Quick flip to the opposite of what is on screen (sidebar button, T shortcut,
-  // launcher). From "system" it saves an explicit Light/Dark, so the user can opt
-  // out of following the OS; pick System again in Settings to re-follow it.
+  // Quick switch (sidebar button, T shortcut, launcher, palette): System -> Light ->
+  // Dark -> System. Choosing Light or Dark saves it explicitly and stops following
+  // the OS; any other saved palette moves on to System. Settings still picks them all.
   function toggle() {
-    const showing = resolveChoice(readChoiceId(projectId), prefersDark());
-    const next = showing.mode === "dark" ? "light" : "dark";
-    getStore()?.setItem(storageKey(projectId), next);
+    getStore()?.setItem(storageKey(projectId), nextChoiceId(readChoiceId(projectId)));
     window.dispatchEvent(new Event(THEME_EVENT));
   }
 
