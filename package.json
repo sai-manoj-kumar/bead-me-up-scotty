@@ -44,6 +44,7 @@
     "start": "next start",
     "serve": "node scripts/serve.mjs",
     "lint": "eslint",
+    "test:browser": "node scripts/run-browser-tests.mjs",
     "prepack": "next build"
   },
   "dependencies": {
